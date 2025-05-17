@@ -1,8 +1,6 @@
 
 #include <gtk/gtk.h>
 
-#include "configs.h"
-
 static void on_activate(GtkApplication* app);
 
 static char* source_path = nullptr;
