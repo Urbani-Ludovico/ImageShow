@@ -33,7 +33,10 @@ static void on_activate(GtkApplication* app) {
         exit(EXIT_FAILURE);
     }
 
-    if (create_window(app) != EXIT_SUCCESS) {
+    GtkStack* stack;
+    GtkPicture* image1;
+    GtkPicture* image2;
+    if (create_window(app, &stack, &image1, &image2) != EXIT_SUCCESS) {
         free_files(files);
         g_application_quit(G_APPLICATION(app));
         exit(EXIT_FAILURE);

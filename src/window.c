@@ -6,7 +6,7 @@
 static void on_escape_pressed(GtkEventControllerKey* controller, guint keyval, guint keycode, GdkModifierType state, gpointer user_data);
 
 
-int create_window(GtkApplication* app) {
+int create_window(GtkApplication* app, GtkStack** out_stack, GtkPicture** out_image1, GtkPicture** out_image2) {
     auto const window = GTK_WINDOW(gtk_application_window_new(app));
 
     gtk_window_set_title(window, "Random Image Show");
@@ -33,6 +33,10 @@ int create_window(GtkApplication* app) {
     gtk_stack_add_child(stack, GTK_WIDGET(image2));
 
     gtk_window_present(window);
+
+    *out_stack = stack;
+    *out_image1 = image1;
+    *out_image2 = image2;
 
     return EXIT_SUCCESS;
 }
