@@ -12,6 +12,8 @@ add_executable(${PROJECT_NAME}
     include/files.h
     src/window.c
     include/window.h
+    src/loop.c
+    include/loop.h
 )
 
 include_directories(include)

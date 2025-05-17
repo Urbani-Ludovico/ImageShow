@@ -2,6 +2,7 @@
 #include <gtk/gtk.h>
 
 #include "files.h"
+#include "loop.h"
 #include "window.h"
 
 static void on_activate(GtkApplication* app);
@@ -25,7 +26,6 @@ int main(const int argc, char** argv) {
     return status;
 }
 
-
 static void on_activate(GtkApplication* app) {
     Files* files;
     if (get_files(&files, source_path) != EXIT_SUCCESS) {
@@ -33,12 +33,20 @@ static void on_activate(GtkApplication* app) {
         exit(EXIT_FAILURE);
     }
 
-    GtkStack* stack;
-    GtkPicture* image1;
-    GtkPicture* image2;
-    if (create_window(app, &stack, &image1, &image2) != EXIT_SUCCESS) {
+    if (files->count == 0) {
+        printf("No files found\n");
+        g_application_quit(G_APPLICATION(app));
+        exit(EXIT_FAILURE);
+    }
+
+    LoopData* data = malloc(sizeof(LoopData));
+    data->files = files;
+
+    if (create_window(app, &data->stack, &data->image1, &data->image2) != EXIT_SUCCESS) {
         free_files(files);
         g_application_quit(G_APPLICATION(app));
         exit(EXIT_FAILURE);
     }
+
+    g_timeout_add(1000, update_image, data);
 }
