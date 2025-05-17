@@ -16,6 +16,22 @@ int create_window(GtkApplication* app) {
     g_signal_connect(key_controller, "key-pressed", G_CALLBACK(on_escape_pressed), window);
     gtk_widget_add_controller(GTK_WIDGET(window), key_controller);
 
+    auto const stack = GTK_STACK(gtk_stack_new());
+    gtk_stack_set_transition_type(stack, GTK_STACK_TRANSITION_TYPE_CROSSFADE);
+    gtk_window_set_child(window, GTK_WIDGET(stack));
+
+    GtkPicture* image1 = GTK_PICTURE(gtk_picture_new());
+    gtk_picture_set_content_fit(image1, GTK_CONTENT_FIT_CONTAIN);
+    gtk_widget_set_hexpand(GTK_WIDGET(image1), true);
+    gtk_widget_set_vexpand(GTK_WIDGET(image1), true);
+    gtk_stack_add_child(stack, GTK_WIDGET(image1));
+
+    GtkPicture* image2 = GTK_PICTURE(gtk_picture_new());
+    gtk_picture_set_content_fit(image2, GTK_CONTENT_FIT_CONTAIN);
+    gtk_widget_set_hexpand(GTK_WIDGET(image2), true);
+    gtk_widget_set_vexpand(GTK_WIDGET(image2), true);
+    gtk_stack_add_child(stack, GTK_WIDGET(image2));
+
     gtk_window_present(window);
 
     return EXIT_SUCCESS;
