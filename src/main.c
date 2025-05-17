@@ -9,7 +9,11 @@ int main(const int argc, char** argv) {
 
     g_signal_connect(app, "activate", G_CALLBACK (on_activate), NULL);
 
-    return g_application_run(G_APPLICATION(app), argc, argv);
+    const int status = g_application_run(G_APPLICATION(app), argc, argv);
+
+    g_object_unref(app);
+
+    return status;
 }
 
 
