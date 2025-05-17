@@ -19,7 +19,6 @@ bool is_directory(const char* path);
 int get_files(Files** files_out, const char* base_path) {
     Files* files = malloc(sizeof(Files));
     files->files = nullptr;
-    files->files_last = nullptr;
     files->seen = nullptr;
     files->seen_last = nullptr;
     files->count = 0;
@@ -77,14 +76,13 @@ int get_files_recursive(Files* files, const char* base_path) {
                 if (found) {
                     FilesNode* file = malloc(sizeof(FilesNode));
                     file->path = strdup(path);
-                    file->next = nullptr;
+                    file->next = file;
 
                     if (files->files == nullptr) {
                         files->files = file;
-                        files->files_last = file;
                     } else {
-                        files->files_last->next = file;
-                        files->files_last = file;
+                        file->next = files->files->next;
+                        files->files->next = file;
                     }
                     files->count++;
                 }

@@ -9,7 +9,6 @@ typedef struct File_ {
 
 typedef struct Files_ {
     FilesNode* files;
-    FilesNode* files_last;
     FilesNode* seen;
     FilesNode* seen_last;
     unsigned int count;
