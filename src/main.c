@@ -1,6 +1,8 @@
 
 #include <gtk/gtk.h>
 
+#include "files.h"
+
 static void on_activate(GtkApplication* app);
 
 static char* source_path = nullptr;
@@ -24,5 +26,9 @@ int main(const int argc, char** argv) {
 
 
 static void on_activate([[maybe_unused]] GtkApplication* app) {
-    printf("%s\n", source_path);
+    Files* files;
+    if (get_files(&files, source_path) != EXIT_SUCCESS) {
+        g_application_quit(G_APPLICATION(app));
+        exit(EXIT_FAILURE);
+    }
 }
