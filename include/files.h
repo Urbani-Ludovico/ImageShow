@@ -3,17 +3,20 @@
 #define FILES_H
 
 typedef struct File_ {
-    char *path;
+    char* path;
+    struct File_* next;
 } FilesNode;
 
 typedef struct Files_ {
     FilesNode* files;
+    FilesNode* files_last;
     FilesNode* seen;
+    FilesNode* seen_last;
     unsigned int count;
-    unsigned int unseen_count;
     unsigned int seen_count;
 } Files;
 
-int get_files(Files** files, const char* path);
+int get_files(Files** files_out, const char* base_path);
+void free_files(Files* files);
 
 #endif
