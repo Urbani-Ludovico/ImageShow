@@ -1,6 +1,8 @@
 
 #include <gtk/gtk.h>
 
+#include "configs.h"
+
 static void on_activate(GtkApplication* app);
 
 
@@ -17,4 +19,9 @@ int main(const int argc, char** argv) {
 }
 
 
-static void on_activate(GtkApplication* app) {}
+static void on_activate(GtkApplication* app) {
+    Configs* configs = malloc(sizeof(Configs));
+    if (get_configs(&configs) != EXIT_SUCCESS) {
+        g_application_quit(G_APPLICATION(app));
+    }
+}

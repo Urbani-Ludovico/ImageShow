@@ -8,6 +8,8 @@ set(COMPILE_OPTIONS -Wall -Wextra -Wpedantic -Werror)
 project(ImageShow C)
 add_executable(${PROJECT_NAME}
         src/main.c
+    src/configs.c
+    include/configs.h
 )
 
 include_directories(include)
