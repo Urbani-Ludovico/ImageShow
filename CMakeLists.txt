@@ -10,6 +10,8 @@ add_executable(${PROJECT_NAME}
     src/main.c
     src/files.c
     include/files.h
+    src/window.c
+    include/window.h
 )
 
 include_directories(include)

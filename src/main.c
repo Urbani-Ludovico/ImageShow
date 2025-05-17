@@ -2,6 +2,7 @@
 #include <gtk/gtk.h>
 
 #include "files.h"
+#include "window.h"
 
 static void on_activate(GtkApplication* app);
 
@@ -25,9 +26,15 @@ int main(const int argc, char** argv) {
 }
 
 
-static void on_activate([[maybe_unused]] GtkApplication* app) {
+static void on_activate(GtkApplication* app) {
     Files* files;
     if (get_files(&files, source_path) != EXIT_SUCCESS) {
+        g_application_quit(G_APPLICATION(app));
+        exit(EXIT_FAILURE);
+    }
+
+    if (create_window(app) != EXIT_SUCCESS) {
+        free_files(files);
         g_application_quit(G_APPLICATION(app));
         exit(EXIT_FAILURE);
     }
