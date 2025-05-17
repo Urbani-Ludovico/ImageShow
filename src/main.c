@@ -5,9 +5,15 @@
 
 static void on_activate(GtkApplication* app);
 
+static char* source_path = nullptr;
+GOptionEntry entries[] = {
+    { "source-path", 'p', 0, G_OPTION_ARG_STRING, &source_path, "Source folder path", "FOLDER" }
+};
 
 int main(const int argc, char** argv) {
-    GtkApplication* app = gtk_application_new("com.example.GtkApplication", G_APPLICATION_DEFAULT_FLAGS);
+    GtkApplication* app = gtk_application_new("com.example.imageshow", G_APPLICATION_DEFAULT_FLAGS);
+
+    g_application_add_main_option_entries(G_APPLICATION(app), entries);
 
     g_signal_connect(app, "activate", G_CALLBACK (on_activate), NULL);
 
@@ -19,9 +25,6 @@ int main(const int argc, char** argv) {
 }
 
 
-static void on_activate(GtkApplication* app) {
-    Configs* configs = malloc(sizeof(Configs));
-    if (get_configs(&configs) != EXIT_SUCCESS) {
-        g_application_quit(G_APPLICATION(app));
-    }
+static void on_activate([[maybe_unused]] GtkApplication* app) {
+    printf("%s\n", source_path);
 }
