@@ -16,6 +16,7 @@ extern char* source_path;
 int get_files_recursive(Files* files, const char* base_path);
 bool is_directory(const char* path);
 
+
 int get_files(Files** files_out) {
     if (source_path == NULL) {
         fprintf(stderr, "No source path provided\n");
