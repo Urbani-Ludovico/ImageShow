@@ -43,15 +43,16 @@ static void on_activate(GtkApplication* app) {
     LoopData* data = malloc(sizeof(LoopData));
     data->files = files;
 
+    if (refresh_interval < 100) {
+        fprintf(stderr, "Refresh interval too small\n");
+    }
+
     if (create_window(app, &data->stack, &data->image1, &data->image2) != EXIT_SUCCESS) {
         free_files(files);
         g_application_quit(G_APPLICATION(app));
         exit(EXIT_FAILURE);
     }
 
-    if (refresh_interval < 100) {
-        fprintf(stderr, "Refresh interval too small\n");
-    }
     update_image(data);
     g_timeout_add(refresh_interval, update_image, data);
 }

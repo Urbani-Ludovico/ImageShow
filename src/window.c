@@ -3,6 +3,8 @@
 
 #include <gtk/gtkapplicationwindow.h>
 
+extern unsigned int refresh_interval;
+
 static void on_escape_pressed(GtkEventControllerKey* controller, guint keyval, guint keycode, GdkModifierType state, gpointer user_data);
 
 
@@ -18,6 +20,7 @@ int create_window(GtkApplication* app, GtkStack** out_stack, GtkPicture** out_im
 
     auto const stack = GTK_STACK(gtk_stack_new());
     gtk_stack_set_transition_type(stack, GTK_STACK_TRANSITION_TYPE_CROSSFADE);
+    gtk_stack_set_transition_duration(stack, refresh_interval >= 3000 ? 1000 : refresh_interval / 3);
     gtk_window_set_child(window, GTK_WIDGET(stack));
 
     GtkPicture* image1 = GTK_PICTURE(gtk_picture_new());
