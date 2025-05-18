@@ -11,12 +11,16 @@
 const char* supported_exts[] = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".tif", ".ico", ".svg", ".webp"};
 constexpr int supported_exts_count = 10;
 
+extern char* source_path;
 
 int get_files_recursive(Files* files, const char* base_path);
 bool is_directory(const char* path);
 
-
-int get_files(Files** files_out, const char* base_path) {
+int get_files(Files** files_out) {
+    if (source_path == NULL) {
+        fprintf(stderr, "No source path provided\n");
+        return EXIT_FAILURE;
+    }
     Files* files = malloc(sizeof(Files));
     files->files = nullptr;
     files->seen = nullptr;
@@ -24,7 +28,7 @@ int get_files(Files** files_out, const char* base_path) {
     files->count = 0;
     files->seen_count = 0;
 
-    get_files_recursive(files, base_path);
+    get_files_recursive(files, source_path);
 
     *files_out = files;
     return EXIT_SUCCESS;

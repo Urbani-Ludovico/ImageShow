@@ -7,14 +7,15 @@
 
 static void on_activate(GtkApplication* app);
 
-static char* source_path = nullptr;
-GOptionEntry entries[] = {
-    { "source-path", 'p', 0, G_OPTION_ARG_STRING, &source_path, "Source folder path", "FOLDER" }
-};
+char* source_path = nullptr;
 
 int main(const int argc, char** argv) {
     GtkApplication* app = gtk_application_new("com.example.imageshow", G_APPLICATION_DEFAULT_FLAGS);
 
+    const GOptionEntry entries[] = {
+        { "source-path", 'p', 0, G_OPTION_ARG_FILENAME, &source_path, "Source folder path", "FOLDER" },
+        {nullptr}
+    };
     g_application_add_main_option_entries(G_APPLICATION(app), entries);
 
     g_signal_connect(app, "activate", G_CALLBACK (on_activate), NULL);
@@ -28,7 +29,7 @@ int main(const int argc, char** argv) {
 
 static void on_activate(GtkApplication* app) {
     Files* files;
-    if (get_files(&files, source_path) != EXIT_SUCCESS) {
+    if (get_files(&files) != EXIT_SUCCESS) {
         g_application_quit(G_APPLICATION(app));
         exit(EXIT_FAILURE);
     }

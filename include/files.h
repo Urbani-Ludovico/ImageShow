@@ -15,7 +15,7 @@ typedef struct Files_ {
     unsigned int seen_count;
 } Files;
 
-int get_files(Files** files_out, const char* base_path);
+int get_files(Files** files_out);
 void free_files(Files* files);
 
 #endif
