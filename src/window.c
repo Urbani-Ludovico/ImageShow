@@ -35,6 +35,8 @@ int create_window(GtkApplication* app, GtkStack** out_stack, GtkPicture** out_im
     gtk_widget_set_vexpand(GTK_WIDGET(image2), true);
     gtk_stack_add_child(stack, GTK_WIDGET(image2));
 
+    gtk_application_inhibit(app, window, GTK_APPLICATION_INHIBIT_SUSPEND | GTK_APPLICATION_INHIBIT_IDLE, "Keeping system awake for important task");
+
     gtk_window_present(window);
 
     *out_stack = stack;
