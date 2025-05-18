@@ -22,7 +22,8 @@ FilesNode* get_next_image(Files* files) {
         return files->files;
     }
 
-    int step = round(files->count * rand());
+    // Random rotations
+    unsigned int step = rand() % (files->count - files->seen_count); // NOLINT(cert-msc30-c, cert-msc50-cpp)
     while (step-- > 0) {
         files->files = files->files->next;
     }
