@@ -8,12 +8,13 @@
 static void on_activate(GtkApplication* app);
 
 char* source_path = nullptr;
+unsigned int refresh_interval = 4000;
 
 
 int main(const int argc, char** argv) {
     GtkApplication* app = gtk_application_new("com.example.imageshow", G_APPLICATION_DEFAULT_FLAGS);
 
-    const GOptionEntry entries[] = {{"source-path", 'p', 0, G_OPTION_ARG_FILENAME, &source_path, "Source folder path", "FOLDER"}, {nullptr}};
+    const GOptionEntry entries[] = {{"source-path", 'p', 0, G_OPTION_ARG_FILENAME, &source_path, "Source folder path", "FOLDER"}, {"refresh-interval", 'p', 0, G_OPTION_ARG_INT, &refresh_interval, "Refresh rate in milliseconds (>= 100)", "RATE"}, {nullptr},};
     g_application_add_main_option_entries(G_APPLICATION(app), entries);
 
     g_signal_connect(app, "activate", G_CALLBACK (on_activate), NULL);
@@ -48,5 +49,9 @@ static void on_activate(GtkApplication* app) {
         exit(EXIT_FAILURE);
     }
 
-    g_timeout_add(1000, update_image, data);
+    if (refresh_interval < 100) {
+        fprintf(stderr, "Refresh interval too small\n");
+    }
+    update_image(data);
+    g_timeout_add(refresh_interval, update_image, data);
 }
