@@ -11,7 +11,7 @@ gboolean update_image(const gpointer user_data) {
     const FilesNode* next_node = get_next_image(data->files);
 
     GtkPicture* next_picture = gtk_stack_get_visible_child(data->stack) == GTK_WIDGET(data->image1) ? data->image2 : data->image1;
-    gtk_image_set_from_file(GTK_IMAGE(next_picture), next_node->path);
+    gtk_picture_set_filename(next_picture, next_node->path);
 
     gtk_stack_set_visible_child(data->stack, GTK_WIDGET(next_picture));
 
