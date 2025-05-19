@@ -15,6 +15,8 @@ static void on_escape_pressed(GtkEventControllerKey* controller, guint keyval, g
 
 static void quit_action_cb(GSimpleAction*, GVariant*, gpointer);
 
+static void autoplay_action(GSimpleAction*, GVariant *, gpointer);
+
 void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label);
 
 static void fullscreen(gpointer);
@@ -59,6 +61,7 @@ int create_window(GtkApplication* app) {
     window_data.presentation_menu = g_menu_new();
     g_menu_append(window_data.presentation_menu, "Previous image", "win.prev");
     g_menu_append(window_data.presentation_menu, "Next image", "win.next");
+    g_menu_append(window_data.presentation_menu, "Auto play", "win.autoplay");
 
     g_menu_append_submenu(window_data.menu_bar, "File", G_MENU_MODEL(window_data.file_menu));
     g_menu_append_submenu(window_data.menu_bar, "Presentation", G_MENU_MODEL(window_data.presentation_menu));
@@ -79,12 +82,14 @@ int create_window(GtkApplication* app) {
     window_data.menu_quit_action = g_simple_action_new("quit", nullptr);
     window_data.menu_prev_action = g_simple_action_new("prev", nullptr);
     window_data.menu_next_action = g_simple_action_new("next", nullptr);
+    window_data.menu_autoplay_action = g_simple_action_new_stateful("autoplay", nullptr, g_variant_new_boolean(FALSE));
 
     // Connect action signals
     g_signal_connect_swapped(window_data.menu_fullscreen_action, "activate", G_CALLBACK(fullscreen), NULL);
     g_signal_connect_swapped(window_data.menu_quit_action, "activate", G_CALLBACK(quit_action_cb), NULL);
     g_signal_connect_swapped(window_data.menu_prev_action, "activate", G_CALLBACK(prev_image_action), NULL);
     g_signal_connect_swapped(window_data.menu_next_action, "activate", G_CALLBACK(next_image_action), NULL);
+    g_signal_connect_swapped(window_data.menu_autoplay_action, "activate", G_CALLBACK(autoplay_action), NULL);
 
     // Add actions to window and application
     window_data.window_action_map = G_ACTION_MAP(window_data.window);
@@ -92,6 +97,7 @@ int create_window(GtkApplication* app) {
     g_action_map_add_action(window_data.window_action_map, G_ACTION(window_data.menu_fullscreen_action));
     g_action_map_add_action(window_data.window_action_map, G_ACTION(window_data.menu_prev_action));
     g_action_map_add_action(window_data.window_action_map, G_ACTION(window_data.menu_next_action));
+    g_action_map_add_action(window_data.window_action_map, G_ACTION(window_data.menu_autoplay_action));
 
     // Set up accelerators (keyboard shortcuts)
     const gchar *fullscreen_accels[] = {"Escape", nullptr};
@@ -165,6 +171,10 @@ static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint,
 
 static void quit_action_cb(GSimpleAction*, GVariant*, gpointer) {
     g_application_quit(G_APPLICATION(app));
+}
+
+static void autoplay_action(GSimpleAction*, GVariant *, gpointer) {
+    start_stop_loop();
 }
 
 static void fullscreen(gpointer) {

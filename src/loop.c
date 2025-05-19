@@ -15,9 +15,11 @@ void start_stop_loop() {
     if (timeout_exists) {
         g_source_remove(timeout_id);
         timeout_exists = false;
+        g_simple_action_set_state(window_data.menu_autoplay_action, g_variant_new_boolean(FALSE));
     } else {
         timeout_id = g_timeout_add(refresh_interval, next_image_action, NULL);
         timeout_exists = true;
+        g_simple_action_set_state(window_data.menu_autoplay_action, g_variant_new_boolean(TRUE));
     }
 }
 
