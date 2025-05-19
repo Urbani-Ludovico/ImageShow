@@ -159,35 +159,34 @@ void free_files() {
 
 void shuffle_files() {
     FilesNode* new_list = nullptr;
-    FilesNode* new_list_last = nullptr;
 
-    while (files.files->next != files.files) {
-        if (files.count > 1) {
+    // Open old chain
+    files.files->prev->next = nullptr;
+    files.files->prev = nullptr;
+
+
+    while (files.files != nullptr) {
+        FilesNode* node = files.files;
+
+        files.files = node->next;
+
+        if (new_list != nullptr) {
             unsigned int step = rand() % files.count; // NOLINT(cert-msc30-c, cert-msc50-cpp)
             while (step-- > 0) {
-                files.files = files.files->next;
+                new_list = new_list->next;
             }
-        }
 
-        FilesNode* node = files.files->next;
-        files.files->next = node->next;
-        node->next = nullptr;
-        if (new_list != nullptr) {
-            new_list_last->next = node;
+            node->next = new_list->next;
+            node->prev = new_list;
+            new_list->next->prev = node;
+            new_list->next = node;
+            new_list = node;
         } else {
             new_list = node;
+            node->next = new_list;
+            node->prev = new_list;
         }
-        new_list_last = node;
     }
-
-    // Move last element
-    if (new_list != nullptr) {
-        new_list_last->next = files.files;
-    } else {
-        new_list = files.files;
-    }
-    new_list_last = files.files;
-    new_list_last->next = new_list;
 
     // Move new list
     files.files = new_list;
