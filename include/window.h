@@ -4,6 +4,13 @@
 
 #include <gtk/gtk.h>
 
-int create_window(GtkApplication *app, GtkStack** out_stack, GtkPicture** out_image1, GtkPicture** out_image2);
+typedef struct WindowData_ {
+    GtkWindow* window;
+    GtkStack* stack;
+    GtkPicture* image1;
+    GtkPicture* image2;
+} WindowData;
+
+int create_window(GtkApplication* app);
 
 #endif

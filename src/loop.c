@@ -2,18 +2,20 @@
 #include "loop.h"
 #include "window.h"
 
+extern WindowData window_data;
+
 FilesNode* get_next_image(Files* files);
 
 
 gboolean update_image(const gpointer user_data) {
-    const LoopData* data = user_data;
+    Files* files = user_data;
 
-    const FilesNode* next_node = get_next_image(data->files);
+    const FilesNode* next_node = get_next_image(files);
 
-    GtkPicture* next_picture = gtk_stack_get_visible_child(data->stack) == GTK_WIDGET(data->image1) ? data->image2 : data->image1;
+    GtkPicture* next_picture = gtk_stack_get_visible_child(window_data.stack) == GTK_WIDGET(window_data.image1) ? window_data.image2 : window_data.image1;
     gtk_picture_set_filename(next_picture, next_node->path);
 
-    gtk_stack_set_visible_child(data->stack, GTK_WIDGET(next_picture));
+    gtk_stack_set_visible_child(window_data.stack, GTK_WIDGET(next_picture));
 
     return TRUE;
 }
