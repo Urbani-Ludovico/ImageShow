@@ -24,8 +24,8 @@ void start_stop_loop() {
 }
 
 void next_image() {
-    const FilesNode* next_node = files.files->next;
-    files.files = next_node->next;
+    FilesNode* next_node = files.files->next;
+    files.files = next_node;
     update_image(next_node);
 }
 
@@ -35,8 +35,8 @@ gboolean next_image_loop(gpointer) {
 }
 
 void prev_image() {
-    const FilesNode* next_node = files.files->prev;
-    files.files = next_node->next;
+    FilesNode* next_node = files.files->prev;
+    files.files = next_node;
     update_image(next_node);
 }
 
