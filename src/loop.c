@@ -13,10 +13,28 @@ FilesNode* get_next_image();
 gboolean update_image(gpointer) {
     const FilesNode* next_node = get_next_image();
 
-    GtkPicture* next_picture = gtk_stack_get_visible_child(window_data.stack) == GTK_WIDGET(window_data.image1) ? window_data.image2 : window_data.image1;
+    GtkOverlay* next_overlay;
+    GtkPicture* next_picture;
+    GtkLabel* next_label;
+    if (gtk_stack_get_visible_child(window_data.stack) == GTK_WIDGET(window_data.overlay1)) {
+        next_overlay = window_data.overlay2;
+        next_picture = window_data.image2;
+        next_label = window_data.label2;
+    } else {
+        next_overlay = window_data.overlay1;
+        next_picture = window_data.image1;
+        next_label = window_data.label1;
+    }
+
     gtk_picture_set_filename(next_picture, next_node->path);
 
-    gtk_stack_set_visible_child(window_data.stack, GTK_WIDGET(next_picture));
+    if (next_node->title != nullptr) {
+        gtk_label_set_text(next_label, next_node->title);
+    } else {
+        gtk_label_set_text(next_label, "");
+    }
+
+    gtk_stack_set_visible_child(window_data.stack, GTK_WIDGET(next_overlay));
 
     return TRUE;
 }
