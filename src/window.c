@@ -15,7 +15,7 @@ static void on_escape_pressed(GtkEventControllerKey* controller, guint keyval, g
 
 static void quit_action_cb(GSimpleAction*, GVariant*, gpointer);
 
-static void autoplay_action(GSimpleAction*, GVariant *, gpointer);
+static void autoplay_action(GSimpleAction*, GVariant*, gpointer);
 
 void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label);
 
@@ -100,13 +100,13 @@ int create_window(GtkApplication* app) {
     g_action_map_add_action(window_data.window_action_map, G_ACTION(window_data.menu_autoplay_action));
 
     // Set up accelerators (keyboard shortcuts)
-    const gchar *fullscreen_accels[] = {"Escape", nullptr};
+    const gchar* fullscreen_accels[] = {"Escape", nullptr};
     gtk_application_set_accels_for_action(app, "win.fullscreen", fullscreen_accels);
-    const gchar *quit_accels[] = {"<Ctrl>Q", nullptr};
+    const gchar* quit_accels[] = {"<Ctrl>Q", nullptr};
     gtk_application_set_accels_for_action(app, "app.quit", quit_accels);
-    const gchar *left_accels[] = {"Left", nullptr};
+    const gchar* left_accels[] = {"Left", nullptr};
     gtk_application_set_accels_for_action(app, "win.prev", left_accels);
-    const gchar *right_accels[] = {"Right", nullptr};
+    const gchar* right_accels[] = {"Right", nullptr};
     gtk_application_set_accels_for_action(app, "win.next", right_accels);
 
     //
@@ -169,13 +169,16 @@ static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint,
     }
 }
 
+
 static void quit_action_cb(GSimpleAction*, GVariant*, gpointer) {
     g_application_quit(G_APPLICATION(app));
 }
 
-static void autoplay_action(GSimpleAction*, GVariant *, gpointer) {
+
+static void autoplay_action(GSimpleAction*, GVariant*, gpointer) {
     start_stop_loop();
 }
+
 
 static void fullscreen(gpointer) {
     if (gtk_window_is_fullscreen(window_data.window)) {

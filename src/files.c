@@ -36,6 +36,7 @@ int get_files() {
     return EXIT_SUCCESS;
 }
 
+
 int get_files_recursive(const char* base_path) {
     DIR* dir = opendir(base_path);
     if (!dir) {
@@ -131,6 +132,7 @@ bool is_directory(const char* path) {
     return S_ISDIR(statbuf.st_mode);
 }
 
+
 void free_file(FilesNode* file) {
     if (file->path != nullptr) {
         free(file->path);
@@ -140,6 +142,7 @@ void free_file(FilesNode* file) {
     }
     free(file);
 }
+
 
 void free_files_chain(FilesNode* files) {
     FilesNode* current = files->next;
@@ -151,11 +154,13 @@ void free_files_chain(FilesNode* files) {
     }
 }
 
+
 void free_files() {
     if (files.files != nullptr) {
         free_files_chain(files.files);
     }
 }
+
 
 void shuffle_files() {
     FilesNode* new_list = nullptr;

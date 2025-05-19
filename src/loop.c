@@ -11,6 +11,7 @@ extern Files files;
 bool timeout_exists = false;
 guint timeout_id;
 
+
 void start_stop_loop() {
     if (timeout_exists) {
         g_source_remove(timeout_id);
@@ -23,16 +24,19 @@ void start_stop_loop() {
     }
 }
 
+
 void next_image() {
     FilesNode* next_node = files.files->next;
     files.files = next_node;
     update_image(next_node);
 }
 
+
 gboolean next_image_action(gpointer) {
     next_image();
     return TRUE;
 }
+
 
 void prev_image() {
     FilesNode* next_node = files.files->prev;
@@ -40,10 +44,12 @@ void prev_image() {
     update_image(next_node);
 }
 
+
 gboolean prev_image_action(gpointer) {
     prev_image();
     return TRUE;
 }
+
 
 void update_image(const FilesNode* next_node) {
     GtkOverlay* next_overlay;
