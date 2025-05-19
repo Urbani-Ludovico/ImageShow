@@ -14,6 +14,8 @@ int refresh_interval = 4000;
 char* add_title = nullptr;
 int label_size = 24;
 
+extern Files files;
+
 
 int main(const int argc, char** argv) {
     app = gtk_application_new("com.example.imageshow", G_APPLICATION_DEFAULT_FLAGS);
@@ -57,5 +59,8 @@ static void on_activate(GtkApplication* app) {
         exit(EXIT_FAILURE);
     }
 
-    start_loop();
+    shuffle_files();
+
+    update_image(files.files);
+    start_stop_loop();
 }

@@ -11,21 +11,36 @@ extern Files files;
 bool timeout_exists = false;
 guint timeout_id;
 
-void start_loop() {
+gboolean next_image_loop(gpointer);
+
+void start_stop_loop() {
     if (timeout_exists) {
         g_source_remove(timeout_id);
+        timeout_exists = false;
+    } else {
+        timeout_id = g_timeout_add(refresh_interval, next_image_loop, NULL);
+        timeout_exists = true;
     }
-
-    update_image(nullptr);
-    timeout_id = g_timeout_add(refresh_interval, update_image, NULL);
-    timeout_exists = true;
 }
 
-FilesNode* get_next_image();
+void next_image() {
+    const FilesNode* next_node = files.files->next;
+    files.files = next_node->next;
+    update_image(next_node);
+}
 
-gboolean update_image(gpointer) {
-    const FilesNode* next_node = get_next_image();
+gboolean next_image_loop(gpointer) {
+    next_image();
+    return TRUE;
+}
 
+void prev_image() {
+    const FilesNode* next_node = files.files->prev;
+    files.files = next_node->next;
+    update_image(next_node);
+}
+
+void update_image(const FilesNode* next_node) {
     GtkOverlay* next_overlay;
     GtkPicture* next_picture;
     GtkLabel* next_label;
@@ -48,44 +63,4 @@ gboolean update_image(gpointer) {
     }
 
     gtk_stack_set_visible_child(window_data.stack, GTK_WIDGET(next_overlay));
-
-    return TRUE;
-}
-
-
-FilesNode* get_next_image() {
-    if (files.count < 2) {
-        return files.files;
-    }
-
-    // Random rotations
-    unsigned int step = rand() % (files.count - files.seen_count); // NOLINT(cert-msc30-c, cert-msc50-cpp)
-    while (step-- > 0) {
-        files.files = files.files->next;
-    }
-
-    // Extract node
-    FilesNode* node = files.files->next;
-    files.files->next = node->next;
-
-    // Seen list
-    node->next = nullptr;
-    if (files.seen_last == nullptr) {
-        files.seen = node;
-    } else {
-        files.seen_last->next = node;
-    }
-    files.seen_last = node;
-    files.seen_count++;
-    while (files.seen_count > (files.count >= 4 ? files.count / 4 : 1)) {
-        FilesNode* tmp = files.seen;
-        files.seen = files.seen->next;
-
-        tmp->next = files.files->next;
-        files.files->next = tmp;
-        files.files = tmp->next;
-        files.seen_count--;
-    }
-
-    return node;
 }

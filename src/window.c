@@ -91,7 +91,7 @@ static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint,
             gtk_window_fullscreen(window_data.window);
         }
     } else if (keyval == GDK_KEY_space) {
-        start_loop();
+        start_stop_loop();
     } else if ((keyval == GDK_KEY_q || keyval == GDK_KEY_Q) && (state & GDK_CONTROL_MASK)) {
         g_application_quit(G_APPLICATION(app));
     }
