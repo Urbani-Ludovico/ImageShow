@@ -98,6 +98,8 @@ int get_files_recursive(const char* base_path) {
             file->path = strdup(path);
             if (add_title != nullptr && strcmp(add_title, "filename") == 0) {
                 strncpy(file->title, entry->d_name, last_dot_index);
+            } else {
+                file->title = nullptr;
             }
             file->next = file;
 
