@@ -101,14 +101,19 @@ int get_files_recursive(const char* base_path) {
             } else {
                 file->title = nullptr;
             }
-            file->next = file;
 
-            if (files.files == nullptr) {
+            if (files.count == 0) {
                 files.files = file;
+                file->next = file;
+                file->prev = file;
             } else {
-                file->next = files.files->next;
-                files.files->next = file;
+                file->next = files.files;
+                file->prev = files.files->prev;
+
+                files.files->prev->next = file;
+                files.files->prev = file;
             }
+
             files.count++;
         }
     }
