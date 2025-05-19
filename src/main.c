@@ -55,6 +55,5 @@ static void on_activate(GtkApplication* app) {
         exit(EXIT_FAILURE);
     }
 
-    update_image(nullptr);
-    g_timeout_add(refresh_interval, update_image, NULL);
+    start_loop();
 }

@@ -4,11 +4,24 @@
 
 #include <files.h>
 
+extern int refresh_interval;
 extern WindowData window_data;
 extern Files files;
 
-FilesNode* get_next_image();
+bool timeout_exists = false;
+guint timeout_id;
 
+void start_loop() {
+    if (timeout_exists) {
+        g_source_remove(timeout_id);
+    }
+
+    update_image(nullptr);
+    timeout_id = g_timeout_add(refresh_interval, update_image, NULL);
+    timeout_exists = true;
+}
+
+FilesNode* get_next_image();
 
 gboolean update_image(gpointer) {
     const FilesNode* next_node = get_next_image();

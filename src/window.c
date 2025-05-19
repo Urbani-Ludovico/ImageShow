@@ -3,6 +3,8 @@
 
 #include <gtk/gtkapplicationwindow.h>
 
+#include "loop.h"
+
 WindowData window_data = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
 extern int refresh_interval;
@@ -87,5 +89,7 @@ static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint,
         } else {
             gtk_window_fullscreen(window_data.window);
         }
+    } else if (keyval == GDK_KEY_space) {
+        start_loop();
     }
 }
