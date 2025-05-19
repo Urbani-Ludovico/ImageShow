@@ -28,28 +28,25 @@ int main(const int argc, char** argv) {
 
 
 static void on_activate(GtkApplication* app) {
-    Files* files;
-    if (get_files(&files) != EXIT_SUCCESS) {
-        g_application_quit(G_APPLICATION(app));
-        exit(EXIT_FAILURE);
-    }
-
-    if (files->count == 0) {
-        printf("No files found\n");
+    if (get_files() != EXIT_SUCCESS) {
+        free_files();
         g_application_quit(G_APPLICATION(app));
         exit(EXIT_FAILURE);
     }
 
     if (refresh_interval < 100) {
         fprintf(stderr, "Refresh interval too small\n");
-    }
-
-    if (create_window(app) != EXIT_SUCCESS) {
-        free_files(files);
+        free_files();
         g_application_quit(G_APPLICATION(app));
         exit(EXIT_FAILURE);
     }
 
-    update_image(files);
-    g_timeout_add(refresh_interval, update_image, files);
+    if (create_window(app) != EXIT_SUCCESS) {
+        free_files();
+        g_application_quit(G_APPLICATION(app));
+        exit(EXIT_FAILURE);
+    }
+
+    update_image(nullptr);
+    g_timeout_add(refresh_interval, update_image, NULL);
 }

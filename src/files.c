@@ -8,35 +8,35 @@
 #include <string.h>
 #include <sys/stat.h>
 
+Files files = {nullptr, nullptr, nullptr, 0, 0};
+
 const char* supported_exts[] = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".tif", ".ico", ".svg", ".webp"};
 constexpr int supported_exts_count = 10;
 
 extern char* source_path;
 
-int get_files_recursive(Files* files, const char* base_path);
+int get_files_recursive(const char* base_path);
 bool is_directory(const char* path);
 
 
-int get_files(Files** files_out) {
+int get_files() {
     if (source_path == NULL) {
         fprintf(stderr, "No source path provided\n");
         return EXIT_FAILURE;
     }
-    Files* files = malloc(sizeof(Files));
-    files->files = nullptr;
-    files->seen = nullptr;
-    files->seen_last = nullptr;
-    files->count = 0;
-    files->seen_count = 0;
 
-    get_files_recursive(files, source_path);
+    get_files_recursive(source_path);
 
-    *files_out = files;
+    if (files.count == 0) {
+        fprintf(stderr, "No files found\n");
+        return EXIT_FAILURE;
+    }
+
     return EXIT_SUCCESS;
 }
 
 
-int get_files_recursive(Files* files, const char* base_path) {
+int get_files_recursive(const char* base_path) {
     struct dirent* entry;
     struct stat statbuf;
     char path[PATH_MAX];
@@ -60,7 +60,7 @@ int get_files_recursive(Files* files, const char* base_path) {
         }
 
         if (S_ISDIR(statbuf.st_mode)) {
-            get_files_recursive(files, path);
+            get_files_recursive(path);
         } else {
             const char* last_dot = strrchr(path, '.');
             if (last_dot != NULL) {
@@ -83,13 +83,13 @@ int get_files_recursive(Files* files, const char* base_path) {
                     file->path = strdup(path);
                     file->next = file;
 
-                    if (files->files == nullptr) {
-                        files->files = file;
+                    if (files.files == nullptr) {
+                        files.files = file;
                     } else {
-                        file->next = files->files->next;
-                        files->files->next = file;
+                        file->next = files.files->next;
+                        files.files->next = file;
                     }
-                    files->count++;
+                    files.count++;
                 }
             }
         }
@@ -109,18 +109,27 @@ bool is_directory(const char* path) {
 }
 
 
-inline void free_files(Files* files) {
-    while (files->files != nullptr) {
-        FilesNode* tmp = files->files;
-        files->files = files->files->next;
+inline void free_files() {
+    if (files.files != nullptr) {
+        FilesNode* file = files.files;
+        files.files = file->next;
+        file->next = nullptr;
+    }
+    while (files.files != nullptr) {
+        FilesNode* tmp = files.files;
+        files.files = files.files->next;
         free(tmp->path);
         free(tmp);
     }
-    while (files->seen != nullptr) {
-        FilesNode* tmp = files->seen;
-        files->seen = files->seen->next;
+    if (files.seen != nullptr) {
+        FilesNode* file = files.seen;
+        files.seen = file->next;
+        file->next = nullptr;
+    }
+    while (files.seen != nullptr) {
+        FilesNode* tmp = files.seen;
+        files.seen = files.seen->next;
         free(tmp->path);
         free(tmp);
     }
-    free(files);
 }

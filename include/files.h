@@ -15,7 +15,7 @@ typedef struct Files_ {
     unsigned int seen_count;
 } Files;
 
-int get_files(Files** files_out);
-void free_files(Files* files);
+int get_files();
+void free_files();
 
 #endif
