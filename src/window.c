@@ -5,7 +5,8 @@
 
 WindowData window_data = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
-extern unsigned int refresh_interval;
+extern int refresh_interval;
+extern int label_size;
 
 static void on_escape_pressed(GtkEventControllerKey* controller, guint keyval, guint keycode, GdkModifierType state);
 
@@ -37,10 +38,12 @@ int create_window(GtkApplication* app) {
 }
 
 void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label) {
+    // Overlay
     auto const overlay = GTK_OVERLAY(gtk_overlay_new());
     *out_overlay = overlay;
     gtk_stack_add_child(window_data.stack, GTK_WIDGET(overlay));
 
+    // Image
     auto const image = GTK_PICTURE(gtk_picture_new());
     *out_image = image;
     gtk_picture_set_content_fit(image, GTK_CONTENT_FIT_CONTAIN);
@@ -48,15 +51,25 @@ void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLab
     gtk_widget_set_vexpand(GTK_WIDGET(image), true);
     gtk_overlay_set_child(overlay, GTK_WIDGET(image));
 
+    // Label
     auto const label = GTK_LABEL(gtk_label_new(""));
     *out_label = label;
+
     gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
     gtk_widget_set_valign(GTK_WIDGET(label), GTK_ALIGN_END);
     gtk_widget_set_margin_start(GTK_WIDGET(label), 10);
     gtk_widget_set_margin_end(GTK_WIDGET(label), 10);
     gtk_widget_set_margin_top(GTK_WIDGET(label), 10);
     gtk_widget_set_margin_bottom(GTK_WIDGET(label), 10);
+
     gtk_label_set_ellipsize(label, PANGO_ELLIPSIZE_END);
+
+    PangoAttrList *attrs = pango_attr_list_new();
+    PangoAttribute *attr = pango_attr_size_new(label_size * PANGO_SCALE);
+    pango_attr_list_insert(attrs, attr);
+    gtk_label_set_attributes(label, attrs);
+    pango_attr_list_unref(attrs);
+
     gtk_overlay_add_overlay(overlay, GTK_WIDGET(label));
 }
 
