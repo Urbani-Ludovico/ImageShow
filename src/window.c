@@ -12,6 +12,7 @@ static void on_escape_pressed(GtkEventControllerKey* controller, guint keyval, g
 
 void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label);
 
+
 int create_window(GtkApplication* app) {
     window_data.window = GTK_WINDOW(gtk_application_window_new(app));
 
@@ -27,15 +28,25 @@ int create_window(GtkApplication* app) {
     gtk_stack_set_transition_duration(window_data.stack, refresh_interval >= 3000 ? 1000 : refresh_interval / 3);
     gtk_window_set_child(window_data.window, GTK_WIDGET(window_data.stack));
 
+    // Pages
     create_window_page(&window_data.overlay1, &window_data.image1, &window_data.label1);
     create_window_page(&window_data.overlay2, &window_data.image2, &window_data.label2);
 
+    // Css
+    char* css = g_strdup_printf("label.image-title { font-size: %dpt; text-shadow: 0px 0px %dpx black; }", label_size, label_size > 10 ? 4 : 1);
+    GtkCssProvider* provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_string(provider, css);
+    free(css);
+    gtk_style_context_add_provider_for_display(gtk_widget_get_display(GTK_WIDGET(window_data.window)), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+    // Prevent suspend
     gtk_application_inhibit(app, window_data.window, GTK_APPLICATION_INHIBIT_SUSPEND | GTK_APPLICATION_INHIBIT_IDLE, "Keeping system awake for important task");
 
     gtk_window_present(window_data.window);
 
     return EXIT_SUCCESS;
 }
+
 
 void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label) {
     // Overlay
@@ -53,6 +64,7 @@ void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLab
 
     // Label
     auto const label = GTK_LABEL(gtk_label_new(""));
+    gtk_widget_add_css_class(GTK_WIDGET(label), "image-title");
     *out_label = label;
 
     gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
@@ -63,12 +75,6 @@ void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLab
     gtk_widget_set_margin_bottom(GTK_WIDGET(label), 10);
 
     gtk_label_set_ellipsize(label, PANGO_ELLIPSIZE_END);
-
-    PangoAttrList *attrs = pango_attr_list_new();
-    PangoAttribute *attr = pango_attr_size_new(label_size * PANGO_SCALE);
-    pango_attr_list_insert(attrs, attr);
-    gtk_label_set_attributes(label, attrs);
-    pango_attr_list_unref(attrs);
 
     gtk_overlay_add_overlay(overlay, GTK_WIDGET(label));
 }
