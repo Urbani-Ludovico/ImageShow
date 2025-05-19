@@ -10,13 +10,11 @@ typedef struct File_ {
 
 typedef struct Files_ {
     FilesNode* files;
-    FilesNode* seen;
-    FilesNode* seen_last;
     unsigned int count;
-    unsigned int seen_count;
 } Files;
 
 int get_files();
 void free_files();
+void shuffle_files();
 
 #endif

@@ -8,7 +8,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-Files files = {nullptr, nullptr, nullptr, 0, 0};
+Files files = {nullptr, 0};
 
 const char* supported_exts[] = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".tif", ".ico", ".svg", ".webp"};
 constexpr int supported_exts_count = 10;
@@ -150,7 +150,40 @@ void free_files() {
     if (files.files != nullptr) {
         free_files_chain(files.files);
     }
-    if (files.seen != nullptr) {
-        free_files_chain(files.seen);
+}
+
+void shuffle_files() {
+    FilesNode* new_list = nullptr;
+    FilesNode* new_list_last = nullptr;
+
+    while (files.files->next != files.files) {
+        if (files.count > 1) {
+            unsigned int step = rand() % files.count; // NOLINT(cert-msc30-c, cert-msc50-cpp)
+            while (step-- > 0) {
+                files.files = files.files->next;
+            }
+        }
+
+        FilesNode* node = files.files->next;
+        files.files->next = node->next;
+        node->next = nullptr;
+        if (new_list != nullptr) {
+            new_list_last->next = node;
+        } else {
+            new_list = node;
+        }
+        new_list_last = node;
     }
+
+    // Move last element
+    if (new_list != nullptr) {
+        new_list_last->next = files.files;
+    } else {
+        new_list = files.files;
+    }
+    new_list_last = files.files;
+    new_list_last->next = new_list;
+
+    // Move new list
+    files.files = new_list;
 }
