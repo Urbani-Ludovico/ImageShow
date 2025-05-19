@@ -7,6 +7,7 @@
 typedef struct WindowData_ {
     GtkWindow* window;
     GtkHeaderBar* header_bar;
+    GActionMap *window_action_map;
 
     GMenu* menu_bar;
     GtkMenuButton* menu_button;
