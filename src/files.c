@@ -14,6 +14,7 @@ const char* supported_exts[] = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff"
 constexpr int supported_exts_count = 10;
 
 extern char* source_path;
+extern char* add_title;
 
 int get_files_recursive(const char* base_path);
 bool is_directory(const char* path);
@@ -35,63 +36,78 @@ int get_files() {
     return EXIT_SUCCESS;
 }
 
-
 int get_files_recursive(const char* base_path) {
-    struct dirent* entry;
-    struct stat statbuf;
-    char path[PATH_MAX];
-
     DIR* dir = opendir(base_path);
     if (!dir) {
         fprintf(stderr, "Cannot open directory: %s\n", base_path);
         return EXIT_FAILURE;
     }
 
+    // Iterate over folder entries
+    struct dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
 
+        // Build absolute path
+        char path[PATH_MAX];
         snprintf(path, sizeof(path), "%s/%s", base_path, entry->d_name);
 
+        // Check if entry is a directory
+        struct stat statbuf;
         if (lstat(path, &statbuf) == -1) {
-            perror("lstat");
+            fprintf(stderr, "Cannot stat file: %s\n", path);
+            return EXIT_FAILURE;
+        }
+        if (S_ISDIR(statbuf.st_mode)) {
+            get_files_recursive(path);
             continue;
         }
 
-        if (S_ISDIR(statbuf.st_mode)) {
-            get_files_recursive(path);
-        } else {
-            const char* last_dot = strrchr(path, '.');
-            if (last_dot != NULL) {
-                char ext[PATH_MAX];
-                strcpy(ext, last_dot);
-                for (unsigned int i = 0; i < strlen(ext); i++) {
-                    ext[i] = (char)tolower(ext[i]);
-                }
-
-                bool found = false;
-                for (int i = 0; i < supported_exts_count; i++) {
-                    if (strcmp(last_dot, supported_exts[i]) == 0) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (found) {
-                    FilesNode* file = malloc(sizeof(FilesNode));
-                    file->path = strdup(path);
-                    file->next = file;
-
-                    if (files.files == nullptr) {
-                        files.files = file;
-                    } else {
-                        file->next = files.files->next;
-                        files.files->next = file;
-                    }
-                    files.count++;
+        // Get last dot index from d_name
+        int last_dot_index = -1;
+        for (int i = (int)strlen(entry->d_name) - 1; i >= 0; i--) {
+            if (entry->d_name[i] == '/') {
+                break;
+            }
+            if (entry->d_name[i] == '.') {
+                last_dot_index = i;
+            }
+        }
+        if (last_dot_index > 0) { // Strict greater than 0 to exclude hidden files without extension
+            // Check if ext is correct
+            char ext[PATH_MAX];
+            strcpy(ext, entry->d_name + last_dot_index);
+            for (unsigned int i = 0; i < strlen(ext); i++) {
+                ext[i] = (char)tolower(ext[i]);
+            }
+            bool ext_found = false;
+            for (int i = 0; i < supported_exts_count; i++) {
+                if (strcmp(ext, supported_exts[i]) == 0) {
+                    ext_found = true;
+                    break;
                 }
             }
+            if (!ext_found) {
+                continue;
+            }
+
+            // Add file to chain
+            FilesNode* file = malloc(sizeof(FilesNode));
+            file->path = strdup(path);
+            if (add_title != nullptr && strcmp(add_title, "filename") == 0) {
+                strncpy(file->title, entry->d_name, last_dot_index);
+            }
+            file->next = file;
+
+            if (files.files == nullptr) {
+                files.files = file;
+            } else {
+                file->next = files.files->next;
+                files.files->next = file;
+            }
+            files.count++;
         }
     }
 
@@ -108,28 +124,31 @@ bool is_directory(const char* path) {
     return S_ISDIR(statbuf.st_mode);
 }
 
-
-inline void free_files() {
-    if (files.files != nullptr) {
-        FilesNode* file = files.files;
-        files.files = file->next;
-        file->next = nullptr;
+void free_file(FilesNode* file) {
+    if (file->path != nullptr) {
+        free(file->path);
     }
-    while (files.files != nullptr) {
-        FilesNode* tmp = files.files;
-        files.files = files.files->next;
-        free(tmp->path);
-        free(tmp);
+    if (file->title != nullptr) {
+        free(file->title);
+    }
+    free(file);
+}
+
+void free_files_chain(FilesNode* files) {
+    FilesNode* current = files->next;
+    files->next = nullptr;
+    while (current != nullptr) {
+        FilesNode* next = current->next;
+        free_file(current);
+        current = next;
+    }
+}
+
+void free_files() {
+    if (files.files != nullptr) {
+        free_files_chain(files.files);
     }
     if (files.seen != nullptr) {
-        FilesNode* file = files.seen;
-        files.seen = file->next;
-        file->next = nullptr;
-    }
-    while (files.seen != nullptr) {
-        FilesNode* tmp = files.seen;
-        files.seen = files.seen->next;
-        free(tmp->path);
-        free(tmp);
+        free_files_chain(files.seen);
     }
 }

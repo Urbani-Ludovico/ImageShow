@@ -4,6 +4,7 @@
 
 typedef struct File_ {
     char* path;
+    char* title;
     struct File_* next;
 } FilesNode;
 
