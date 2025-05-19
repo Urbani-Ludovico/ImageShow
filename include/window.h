@@ -15,6 +15,8 @@ typedef struct WindowData_ {
     GMenu* presentation_menu;
     GSimpleAction* menu_fullscreen_action;
     GSimpleAction* menu_quit_action;
+    GSimpleAction* menu_prev_action;
+    GSimpleAction* menu_next_action;
 
     GtkStack* stack;
 

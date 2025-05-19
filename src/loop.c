@@ -11,14 +11,14 @@ extern Files files;
 bool timeout_exists = false;
 guint timeout_id;
 
-gboolean next_image_loop(gpointer);
+gboolean next_image_action(gpointer);
 
 void start_stop_loop() {
     if (timeout_exists) {
         g_source_remove(timeout_id);
         timeout_exists = false;
     } else {
-        timeout_id = g_timeout_add(refresh_interval, next_image_loop, NULL);
+        timeout_id = g_timeout_add(refresh_interval, next_image_action, NULL);
         timeout_exists = true;
     }
 }
@@ -29,7 +29,7 @@ void next_image() {
     update_image(next_node);
 }
 
-gboolean next_image_loop(gpointer) {
+gboolean next_image_action(gpointer) {
     next_image();
     return TRUE;
 }
@@ -38,6 +38,11 @@ void prev_image() {
     FilesNode* next_node = files.files->prev;
     files.files = next_node;
     update_image(next_node);
+}
+
+gboolean prev_image_action(gpointer) {
+    prev_image();
+    return TRUE;
 }
 
 void update_image(const FilesNode* next_node) {

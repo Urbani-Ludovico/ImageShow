@@ -55,6 +55,8 @@ int create_window(GtkApplication* app) {
     g_menu_append(window_data.file_menu, "Quit", "app.quit");
 
     window_data.presentation_menu = g_menu_new();
+    g_menu_append(window_data.presentation_menu, "Previous image", "app.prev");
+    g_menu_append(window_data.presentation_menu, "Next image", "app.next");
 
     g_menu_append_submenu(window_data.menu_bar, "File", G_MENU_MODEL(window_data.file_menu));
     g_menu_append_submenu(window_data.menu_bar, "Presentation", G_MENU_MODEL(window_data.presentation_menu));
@@ -73,14 +75,20 @@ int create_window(GtkApplication* app) {
     // Create actions
     window_data.menu_fullscreen_action = g_simple_action_new("fullscreen", nullptr);
     window_data.menu_quit_action = g_simple_action_new("quit", nullptr);
+    window_data.menu_prev_action = g_simple_action_new("prev", nullptr);
+    window_data.menu_next_action = g_simple_action_new("next", nullptr);
 
     // Connect action signals
     g_signal_connect_swapped(window_data.menu_fullscreen_action, "activate", G_CALLBACK(fullscreen), NULL);
     g_signal_connect_swapped(window_data.menu_quit_action, "activate", G_CALLBACK(g_application_quit), NULL);
+    g_signal_connect_swapped(window_data.menu_prev_action, "activate", G_CALLBACK(prev_image_action), NULL);
+    g_signal_connect_swapped(window_data.menu_next_action, "activate", G_CALLBACK(next_image_action), NULL);
 
     // Add actions to window and application
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_quit_action));
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_fullscreen_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_prev_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_next_action));
 
     //
     // Css
