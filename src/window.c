@@ -5,7 +5,7 @@
 
 #include "loop.h"
 
-WindowData window_data = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+WindowData window_data;
 
 extern GtkApplication* app;
 extern int refresh_interval;
@@ -34,6 +34,23 @@ int create_window(GtkApplication* app) {
     // Pages
     create_window_page(&window_data.overlay1, &window_data.image1, &window_data.label1);
     create_window_page(&window_data.overlay2, &window_data.image2, &window_data.label2);
+
+    // Menu
+    window_data.menu_bar = g_menu_new();
+    window_data.file_menu = g_menu_new();
+    window_data.presentation_menu = g_menu_new();
+
+    g_menu_append_submenu(window_data.menu_bar, "File", G_MENU_MODEL(window_data.file_menu));
+    g_menu_append_submenu(window_data.menu_bar, "Presentation", G_MENU_MODEL(window_data.presentation_menu));
+
+    window_data.menu_button = GTK_MENU_BUTTON(gtk_menu_button_new());
+    window_data.menu_popover = GTK_POPOVER_MENU(gtk_popover_menu_new_from_model(G_MENU_MODEL(window_data.menu_bar)));
+    gtk_menu_button_set_popover(window_data.menu_button, GTK_WIDGET(window_data.menu_popover));
+    gtk_menu_button_set_icon_name(window_data.menu_button, "open-menu-symbolic");
+
+    window_data.header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
+    gtk_header_bar_pack_end(window_data.header_bar, GTK_WIDGET(window_data.menu_button));
+    gtk_window_set_titlebar(window_data.window, GTK_WIDGET(window_data.header_bar));
 
     // Css
     char* css = g_strdup_printf("label.image-title { font-size: %dpt; text-shadow: 0px 0px %dpx black; }", label_size, label_size > 10 ? 4 : 1);
