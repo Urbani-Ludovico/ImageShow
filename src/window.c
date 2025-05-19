@@ -15,6 +15,8 @@ static void on_escape_pressed(GtkEventControllerKey* controller, guint keyval, g
 
 void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label);
 
+static void fullscreen(gpointer);
+
 
 int create_window(GtkApplication* app) {
     window_data.window = GTK_WINDOW(gtk_application_window_new(app));
@@ -49,6 +51,7 @@ int create_window(GtkApplication* app) {
     window_data.menu_bar = g_menu_new();
 
     window_data.file_menu = g_menu_new();
+    g_menu_append(window_data.file_menu, "Fullscreen", "app.fullscreen");
     g_menu_append(window_data.file_menu, "Quit", "app.quit");
 
     window_data.presentation_menu = g_menu_new();
@@ -68,13 +71,16 @@ int create_window(GtkApplication* app) {
     gtk_window_set_titlebar(window_data.window, GTK_WIDGET(window_data.header_bar));
 
     // Create actions
+    window_data.menu_fullscreen_action = g_simple_action_new("fullscreen", nullptr);
     window_data.menu_quit_action = g_simple_action_new("quit", nullptr);
 
     // Connect action signals
-    g_signal_connect_swapped(window_data.menu_quit_action, "activate", G_CALLBACK(g_application_quit), app);
+    g_signal_connect_swapped(window_data.menu_fullscreen_action, "activate", G_CALLBACK(fullscreen), NULL);
+    g_signal_connect_swapped(window_data.menu_quit_action, "activate", G_CALLBACK(g_application_quit), NULL);
 
     // Add actions to window and application
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_quit_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_fullscreen_action));
 
     //
     // Css
@@ -128,11 +134,7 @@ void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLab
 
 static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint, const GdkModifierType state) {
     if (keyval == GDK_KEY_Escape) {
-        if (gtk_window_is_fullscreen(window_data.window)) {
-            gtk_window_unfullscreen(window_data.window);
-        } else {
-            gtk_window_fullscreen(window_data.window);
-        }
+        fullscreen(nullptr);
     } else if (keyval == GDK_KEY_space) {
         start_stop_loop();
     } else if (keyval == GDK_KEY_Left) {
@@ -141,5 +143,13 @@ static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint,
         next_image();
     } else if ((keyval == GDK_KEY_q || keyval == GDK_KEY_Q) && (state & GDK_CONTROL_MASK)) {
         g_application_quit(G_APPLICATION(app));
+    }
+}
+
+static void fullscreen(gpointer) {
+    if (gtk_window_is_fullscreen(window_data.window)) {
+        gtk_window_unfullscreen(window_data.window);
+    } else {
+        gtk_window_fullscreen(window_data.window);
     }
 }
