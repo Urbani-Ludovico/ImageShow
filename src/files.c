@@ -67,7 +67,7 @@ int get_files_recursive(const char* base_path) {
                 char ext[PATH_MAX];
                 strcpy(ext, last_dot);
                 for (unsigned int i = 0; i < strlen(ext); i++) {
-                    ext[i] = tolower(ext[i]);
+                    ext[i] = (char)tolower(ext[i]);
                 }
 
                 bool found = false;
