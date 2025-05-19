@@ -7,6 +7,7 @@
 
 WindowData window_data = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
+extern GtkApplication* app;
 extern int refresh_interval;
 extern int label_size;
 
@@ -82,7 +83,7 @@ void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLab
 }
 
 
-static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint, GdkModifierType) {
+static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint, const GdkModifierType state) {
     if (keyval == GDK_KEY_Escape) {
         if (gtk_window_is_fullscreen(window_data.window)) {
             gtk_window_unfullscreen(window_data.window);
@@ -91,5 +92,7 @@ static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint,
         }
     } else if (keyval == GDK_KEY_space) {
         start_loop();
+    } else if ((keyval == GDK_KEY_q || keyval == GDK_KEY_Q) && (state & GDK_CONTROL_MASK)) {
+        g_application_quit(G_APPLICATION(app));
     }
 }
