@@ -13,6 +13,8 @@ extern int label_size;
 
 static void on_escape_pressed(GtkEventControllerKey* controller, guint keyval, guint keycode, GdkModifierType state);
 
+static void quit_action_cb(GSimpleAction*, GVariant*, gpointer);
+
 void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label);
 
 static void fullscreen(gpointer);
@@ -80,7 +82,7 @@ int create_window(GtkApplication* app) {
 
     // Connect action signals
     g_signal_connect_swapped(window_data.menu_fullscreen_action, "activate", G_CALLBACK(fullscreen), NULL);
-    g_signal_connect_swapped(window_data.menu_quit_action, "activate", G_CALLBACK(g_application_quit), NULL);
+    g_signal_connect_swapped(window_data.menu_quit_action, "activate", G_CALLBACK(quit_action_cb), NULL);
     g_signal_connect_swapped(window_data.menu_prev_action, "activate", G_CALLBACK(prev_image_action), NULL);
     g_signal_connect_swapped(window_data.menu_next_action, "activate", G_CALLBACK(next_image_action), NULL);
 
@@ -89,6 +91,12 @@ int create_window(GtkApplication* app) {
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_fullscreen_action));
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_prev_action));
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_next_action));
+
+    // Set up accelerators (keyboard shortcuts)
+    const gchar *fullscreen_accels[] = {"Escape", nullptr};
+    gtk_application_set_accels_for_action(app, "app.fullscreen", fullscreen_accels);
+    const gchar *quit_accels[] = {"<Ctrl>Q", nullptr};
+    gtk_application_set_accels_for_action(app, "app.quit", quit_accels);
 
     //
     // Css
@@ -140,18 +148,18 @@ void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLab
 }
 
 
-static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint, const GdkModifierType state) {
-    if (keyval == GDK_KEY_Escape) {
-        fullscreen(nullptr);
-    } else if (keyval == GDK_KEY_space) {
+static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint, GdkModifierType) {
+    if (keyval == GDK_KEY_space) {
         start_stop_loop();
     } else if (keyval == GDK_KEY_Left) {
         prev_image();
     } else if (keyval == GDK_KEY_Right) {
         next_image();
-    } else if ((keyval == GDK_KEY_q || keyval == GDK_KEY_Q) && (state & GDK_CONTROL_MASK)) {
-        g_application_quit(G_APPLICATION(app));
     }
+}
+
+static void quit_action_cb(GSimpleAction*, GVariant*, gpointer) {
+    g_application_quit(G_APPLICATION(app));
 }
 
 static void fullscreen(gpointer) {
