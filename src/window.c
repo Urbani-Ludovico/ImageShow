@@ -108,6 +108,8 @@ int create_window(GtkApplication* app) {
     gtk_application_set_accels_for_action(app, "win.prev", left_accels);
     const gchar* right_accels[] = {"Right", nullptr};
     gtk_application_set_accels_for_action(app, "win.next", right_accels);
+    const gchar* autoplay_accels[] = {"Space", nullptr};
+    gtk_application_set_accels_for_action(app, "win.autoplay", right_accels);
 
     //
     // Css
