@@ -11,8 +11,6 @@ extern Files files;
 bool timeout_exists = false;
 guint timeout_id;
 
-gboolean next_image_action(gpointer);
-
 void start_stop_loop() {
     if (timeout_exists) {
         g_source_remove(timeout_id);
