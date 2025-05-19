@@ -13,6 +13,7 @@ typedef struct WindowData_ {
     GtkPopoverMenu* menu_popover;
     GMenu* file_menu;
     GMenu* presentation_menu;
+    GSimpleAction* menu_quit_action;
 
     GtkStack* stack;
 

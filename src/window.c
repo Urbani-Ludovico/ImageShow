@@ -68,13 +68,13 @@ int create_window(GtkApplication* app) {
     gtk_window_set_titlebar(window_data.window, GTK_WIDGET(window_data.header_bar));
 
     // Create actions
-    GSimpleAction *quit_action = g_simple_action_new("quit", nullptr);
+    window_data.menu_quit_action = g_simple_action_new("quit", nullptr);
 
     // Connect action signals
-    g_signal_connect_swapped(quit_action, "activate", G_CALLBACK(g_application_quit), app);
+    g_signal_connect_swapped(window_data.menu_quit_action, "activate", G_CALLBACK(g_application_quit), app);
 
     // Add actions to window and application
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(quit_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_quit_action));
 
     //
     // Css
