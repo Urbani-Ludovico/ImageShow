@@ -19,6 +19,7 @@ typedef struct WindowData_ {
     GSimpleAction* menu_prev_action;
     GSimpleAction* menu_next_action;
     GSimpleAction* menu_autoplay_action;
+    GSimpleAction* menu_shuffle_action;
 
     GtkStack* stack;
 

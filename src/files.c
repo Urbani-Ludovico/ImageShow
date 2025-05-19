@@ -196,3 +196,7 @@ void shuffle_files() {
     // Move new list
     files.files = new_list;
 }
+
+void shuffle_files_action(gpointer) {
+    shuffle_files();
+}

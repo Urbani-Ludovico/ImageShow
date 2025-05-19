@@ -2,6 +2,8 @@
 #ifndef FILES_H
 #define FILES_H
 
+#include <gtk/gtk.h>
+
 typedef struct File_ {
     char* path;
     char* title;
@@ -17,5 +19,6 @@ typedef struct Files_ {
 int get_files();
 void free_files();
 void shuffle_files();
+void shuffle_files_action(gpointer);
 
 #endif
