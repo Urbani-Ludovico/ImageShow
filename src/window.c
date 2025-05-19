@@ -11,8 +11,6 @@ extern GtkApplication* app;
 extern int refresh_interval;
 extern int label_size;
 
-static void on_escape_pressed(GtkEventControllerKey* controller, guint keyval, guint keycode, GdkModifierType state);
-
 static void quit_action_cb(GSimpleAction*, GVariant*, gpointer);
 
 static void autoplay_action(GSimpleAction*, GVariant*, gpointer);
@@ -27,13 +25,6 @@ int create_window(GtkApplication* app) {
 
     gtk_window_set_title(window_data.window, "Random Image Show");
     gtk_window_set_default_size(window_data.window, 800, 600);
-
-    //
-    // Key press
-    //
-    GtkEventController* key_controller = gtk_event_controller_key_new();
-    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(on_escape_pressed), NULL);
-    gtk_widget_add_controller(GTK_WIDGET(window_data.window), key_controller);
 
     //
     // Stack
@@ -164,17 +155,6 @@ void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLab
     gtk_label_set_ellipsize(label, PANGO_ELLIPSIZE_END);
 
     gtk_overlay_add_overlay(overlay, GTK_WIDGET(label));
-}
-
-
-static void on_escape_pressed(GtkEventControllerKey*, const guint keyval, guint, GdkModifierType) {
-    if (keyval == GDK_KEY_space) {
-        start_stop_loop();
-    } else if (keyval == GDK_KEY_Left) {
-        prev_image();
-    } else if (keyval == GDK_KEY_Right) {
-        next_image();
-    }
 }
 
 
