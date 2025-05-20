@@ -102,7 +102,10 @@ int get_files_recursive(const char* base_path) {
             } else if (strcmp(add_title, "filename") == 0) {
                 file->title = strndup(entry->d_name, last_dot_index);
             } else if (strcmp(add_title, "lastdir") == 0 && strcmp(base_path, source_path) != 0) {
-                file->title = strdup(base_path + strlen(source_path) + 1);
+                char* last_slash = strrchr(base_path, '/');
+                if (last_slash != nullptr) {
+                    file->title = strdup(last_slash + 1);
+                }
             }
 
             if (files.count == 0) {
