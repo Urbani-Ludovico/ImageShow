@@ -97,10 +97,12 @@ int get_files_recursive(const char* base_path) {
             // Add file to chain
             FilesNode* file = malloc(sizeof(FilesNode));
             file->path = strdup(path);
-            if (add_title != nullptr && strcmp(add_title, "filename") == 0) {
-                file->title = strndup(entry->d_name, last_dot_index);
-            } else {
+            if (add_title == nullptr) {
                 file->title = nullptr;
+            } else if (strcmp(add_title, "filename") == 0) {
+                file->title = strndup(entry->d_name, last_dot_index);
+            } else if (strcmp(add_title, "lastdir") == 0 && strcmp(base_path, source_path) != 0) {
+                file->title = strdup(base_path + strlen(source_path) + 1);
             }
 
             if (files.count == 0) {
@@ -196,6 +198,7 @@ void shuffle_files() {
     // Move new list
     files.files = new_list;
 }
+
 
 void shuffle_files_action(gpointer) {
     shuffle_files();
