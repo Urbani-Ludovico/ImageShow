@@ -116,13 +116,13 @@ int create_window(GtkApplication* app) {
     g_signal_connect_swapped(window_data->menu_shuffle_action, "activate", G_CALLBACK(shuffle_files_action), window_data);
 
     // Add actions to window and application
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_fullscreen_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_close_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_quit_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_prev_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_next_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_autoplay_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_shuffle_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_fullscreen_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_close_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_quit_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_prev_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_next_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_autoplay_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_shuffle_action));
 
     // Set up accelerators (keyboard shortcuts)
     const gchar* fullscreen_accels[] = {"Escape", nullptr};
