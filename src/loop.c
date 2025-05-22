@@ -39,7 +39,7 @@ void stop_loop() {
 
 
 static gboolean loop_step(gpointer) {
-    for (int i = 0; i < windows_data->len; i++) {
+    for (guint i = 0; i < windows_data->len; i++) {
         next_image(g_ptr_array_index(windows_data, i));
     }
     return true;
