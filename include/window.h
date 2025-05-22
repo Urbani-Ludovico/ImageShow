@@ -14,6 +14,7 @@ typedef struct WindowData_ {
     GtkPopoverMenu* menu_popover;
     GMenu* file_menu;
     GMenu* presentation_menu;
+    GMenu* window_menu;
     GSimpleAction* menu_fullscreen_action;
     GSimpleAction* menu_new_action;
     GSimpleAction* menu_close_action;
@@ -23,12 +24,15 @@ typedef struct WindowData_ {
     GSimpleAction* menu_autoplay_action;
     GSimpleAction* menu_thisautoplay_action;
     GSimpleAction* menu_shuffle_action;
+    GSimpleAction* menu_zoomin_title_action;
+    GSimpleAction* menu_zoomout_title_action;
 
     GtkStack* stack;
 
     GtkOverlay* overlay1;
     GtkPicture* image1;
     GtkLabel* label1;
+    unsigned int label_size;
 
     GtkOverlay* overlay2;
     GtkPicture* image2;

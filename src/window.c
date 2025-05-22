@@ -31,7 +31,13 @@ static void next_image_action(gpointer user_data);
 
 static void shuffle_files_action(gpointer user_data);
 
+static void zoomin_title_action(gpointer user_data);
+
+static void zoomout_title_action(gpointer user_data);
+
 void create_window_page(const WindowData* window_data, GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label);
+
+void window_title_update_font(const WindowData* window_data);
 
 static void on_window_close(GtkWindow* window, gpointer);
 
@@ -44,6 +50,8 @@ int create_window() {
 
     gtk_window_set_title(window_data->window, "Random Image Show");
     gtk_window_set_default_size(window_data->window, 800, 600);
+
+    window_data->label_size = label_size;
 
     //
     // Files
@@ -97,8 +105,13 @@ int create_window() {
     g_menu_append(window_data->presentation_menu, "Auto play this window", "win.thisautoplay");
     g_menu_append(window_data->presentation_menu, "Shuffle files", "win.shuffle");
 
+    window_data->window_menu = g_menu_new();
+    g_menu_append(window_data->window_menu, "Zoom in title", "win.zoomin_title");
+    g_menu_append(window_data->window_menu, "Zoom out title", "win.zoomout_title");
+
     g_menu_append_submenu(window_data->menu_bar, "File", G_MENU_MODEL(window_data->file_menu));
     g_menu_append_submenu(window_data->menu_bar, "Presentation", G_MENU_MODEL(window_data->presentation_menu));
+    g_menu_append_submenu(window_data->menu_bar, "Window", G_MENU_MODEL(window_data->window_menu));
 
     // Create the popover menu
     window_data->menu_button = GTK_MENU_BUTTON(gtk_menu_button_new());
@@ -121,6 +134,8 @@ int create_window() {
     window_data->menu_autoplay_action = g_simple_action_new_stateful("autoplay", nullptr, g_variant_new_boolean(FALSE));
     window_data->menu_thisautoplay_action = g_simple_action_new_stateful("thisautoplay", nullptr, g_variant_new_boolean(TRUE));
     window_data->menu_shuffle_action = g_simple_action_new("shuffle", nullptr);
+    window_data->menu_zoomin_title_action = g_simple_action_new("zoomin_title", nullptr);
+    window_data->menu_zoomout_title_action = g_simple_action_new("zoomout_title", nullptr);
 
     // Connect action signals
     g_signal_connect_swapped(window_data->menu_fullscreen_action, "activate", G_CALLBACK(fullscreen_action), window_data);
@@ -132,6 +147,8 @@ int create_window() {
     g_signal_connect_swapped(window_data->menu_autoplay_action, "activate", G_CALLBACK(autoplay_action), NULL);
     g_signal_connect_swapped(window_data->menu_thisautoplay_action, "activate", G_CALLBACK(this_autoplay_action), window_data);
     g_signal_connect_swapped(window_data->menu_shuffle_action, "activate", G_CALLBACK(shuffle_files_action), window_data);
+    g_signal_connect_swapped(window_data->menu_zoomin_title_action, "activate", G_CALLBACK(zoomin_title_action), window_data);
+    g_signal_connect_swapped(window_data->menu_zoomout_title_action, "activate", G_CALLBACK(zoomout_title_action), window_data);
 
     // Add actions to window and application
     g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_fullscreen_action));
@@ -143,6 +160,8 @@ int create_window() {
     g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_autoplay_action));
     g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_thisautoplay_action));
     g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_shuffle_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_zoomin_title_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_zoomout_title_action));
 
     // Set up accelerators (keyboard shortcuts)
     const gchar* fullscreen_accels[] = {"Escape", nullptr};
@@ -163,15 +182,15 @@ int create_window() {
     gtk_application_set_accels_for_action(app, "win.thisautoplay", thisautoplay_accels);
     const gchar* shuffle_accels[] = {"<Ctrl>R", nullptr};
     gtk_application_set_accels_for_action(app, "win.shuffle", shuffle_accels);
+    const gchar* zoomin_title_accels[] = {"<Ctrl>plus", nullptr};
+    gtk_application_set_accels_for_action(app, "win.zoomin_title", zoomin_title_accels);
+    const gchar* zoomout_title_accels[] = {"<Ctrl>minus", nullptr};
+    gtk_application_set_accels_for_action(app, "win.zoomout_title", zoomout_title_accels);
 
     //
     // Css
     //
-    char* css = g_strdup_printf("label.image-title { font-size: %dpt; text-shadow: 0px 0px %dpx black; }", label_size, label_size > 10 ? 4 : 1);
-    GtkCssProvider* provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_string(provider, css);
-    free(css);
-    gtk_style_context_add_provider_for_display(gtk_widget_get_display(GTK_WIDGET(window_data->window)), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    window_title_update_font(window_data);
 
     //
     // Prevent suspend
@@ -221,6 +240,37 @@ void create_window_page(const WindowData* window_data, GtkOverlay** out_overlay,
 }
 
 
+void window_title_update_font(const WindowData* window_data) {
+    GtkCssProvider* provider = gtk_css_provider_new();
+
+    char* css = g_strdup_printf("label.image-title { font-size: %dpt; text-shadow: 0px 0px %dpx black; }", window_data->label_size, window_data->label_size > 10 ? 4 : 1);
+
+    gtk_css_provider_load_from_string(provider, css);
+    free(css);
+
+    GtkCssProvider* old = g_object_get_data(G_OBJECT(window_data->label1), "font-provider");
+    if (old) {
+        GdkDisplay* display = gtk_widget_get_display(GTK_WIDGET(window_data->label1));
+        gtk_style_context_remove_provider_for_display(display, GTK_STYLE_PROVIDER(old));
+        g_object_unref(old);
+    }
+    old = g_object_get_data(G_OBJECT(window_data->label2), "font-provider");
+    if (old) {
+        GdkDisplay* display = gtk_widget_get_display(GTK_WIDGET(window_data->label2));
+        gtk_style_context_remove_provider_for_display(display, GTK_STYLE_PROVIDER(old));
+        g_object_unref(old);
+    }
+
+    GdkDisplay* display = gtk_widget_get_display(GTK_WIDGET(window_data->label1));
+    gtk_style_context_add_provider_for_display(display, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_set_data_full(G_OBJECT(window_data->label1), "font-provider", provider, g_object_unref);
+
+    display = gtk_widget_get_display(GTK_WIDGET(window_data->label2));
+    gtk_style_context_add_provider_for_display(display, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_set_data_full(G_OBJECT(window_data->label2), "font-provider", provider, g_object_unref);
+}
+
+
 static void fullscreen_action(const gpointer user_data) {
     auto const window_data = (WindowData*)user_data;
     if (gtk_window_is_fullscreen(window_data->window)) {
@@ -229,6 +279,7 @@ static void fullscreen_action(const gpointer user_data) {
         gtk_window_fullscreen(window_data->window);
     }
 }
+
 
 static void new_window_action(gpointer) {
     create_window();
@@ -264,6 +315,7 @@ static void autoplay_action(gpointer) {
     start_stop_loop();
 }
 
+
 static void this_autoplay_action(const gpointer user_data) {
     auto const window_data = (WindowData*)user_data;
     window_data->autoplay = !window_data->autoplay;
@@ -277,11 +329,30 @@ static void shuffle_files_action(const gpointer user_data) {
 }
 
 
+static void zoomin_title_action(const gpointer user_data) {
+    auto const window_data = (WindowData*)user_data;
+    if (window_data->label_size < 256) {
+        window_data->label_size++;
+    }
+    window_title_update_font(window_data);
+}
+
+
+static void zoomout_title_action(const gpointer user_data) {
+    auto const window_data = (WindowData*)user_data;
+    if (window_data->label_size > 4) {
+        window_data->label_size--;
+    }
+    window_title_update_font(window_data);
+}
+
+
 static void on_window_close(GtkWindow* window, gpointer) {
     g_ptr_array_remove(windows_data, window);
 
     gtk_window_destroy(window);
 }
+
 
 void update_window_image(WindowData* window_data) {
     GtkOverlay* next_overlay;
@@ -302,10 +373,10 @@ void update_window_image(WindowData* window_data) {
     }
     auto const file = (File*)g_ptr_array_index(files, window_data->files_order[window_data->file_index]);
 
-    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(file->path, nullptr);
+    GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(file->path, nullptr);
     pixbuf = gdk_pixbuf_apply_embedded_orientation(pixbuf);
 
-    GdkPaintable *paintable = GDK_PAINTABLE(gdk_texture_new_for_pixbuf(pixbuf));
+    GdkPaintable* paintable = GDK_PAINTABLE(gdk_texture_new_for_pixbuf(pixbuf));
     g_object_unref(pixbuf);
 
     gtk_picture_set_paintable(next_picture, paintable);
@@ -319,6 +390,7 @@ void update_window_image(WindowData* window_data) {
 
     gtk_stack_set_visible_child(window_data->stack, GTK_WIDGET(next_overlay));
 }
+
 
 void free_windows() {
     for (guint i = 0; i < windows_data->len; i++) {
