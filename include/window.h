@@ -15,6 +15,7 @@ typedef struct WindowData_ {
     GMenu* file_menu;
     GMenu* presentation_menu;
     GSimpleAction* menu_fullscreen_action;
+    GSimpleAction* menu_new_action;
     GSimpleAction* menu_close_action;
     GSimpleAction* menu_quit_action;
     GSimpleAction* menu_prev_action;
@@ -37,7 +38,7 @@ typedef struct WindowData_ {
     bool next_step_skip;
 } WindowData;
 
-int create_window(GtkApplication* app);
+int create_window();
 
 void update_window_image(WindowData* window_data);
 

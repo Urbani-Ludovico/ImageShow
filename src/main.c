@@ -65,7 +65,7 @@ static void on_activate(GtkApplication* app) {
         exit(EXIT_FAILURE);
     }
 
-    if (create_window(app) != EXIT_SUCCESS) {
+    if (create_window() != EXIT_SUCCESS) {
         free_files();
         g_application_quit(G_APPLICATION(app));
         exit(EXIT_FAILURE);
