@@ -187,3 +187,10 @@ static void on_window_close(GtkWindow* window, gpointer) {
 
     gtk_window_destroy(window);
 }
+
+void free_windows() {
+    for (int i = 0; i < windows_data->len; i++) {
+        free(((WindowData*)g_ptr_array_index(windows_data, i))->files_order);
+    }
+    g_ptr_array_free(windows_data, true);
+}

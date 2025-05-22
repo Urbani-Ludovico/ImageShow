@@ -30,8 +30,12 @@ typedef struct WindowData_ {
     GtkOverlay* overlay2;
     GtkPicture* image2;
     GtkLabel* label2;
+
+    unsigned int* files_order;
 } WindowData;
 
 int create_window(GtkApplication* app);
+
+void free_windows();
 
 #endif

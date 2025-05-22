@@ -34,7 +34,7 @@ int main(const int argc, char** argv) {
     const int status = g_application_run(G_APPLICATION(app), argc, argv);
 
     g_object_unref(app);
-    g_ptr_array_free(windows_data, true);
+    free_windows();
     free_files();
 
     return status;
