@@ -282,7 +282,7 @@ void update_window_image(WindowData* window_data) {
 }
 
 void free_windows() {
-    for (int i = 0; i < windows_data->len; i++) {
+    for (guint i = 0; i < windows_data->len; i++) {
         free(((WindowData*)g_ptr_array_index(windows_data, i))->files_order);
     }
     g_ptr_array_free(windows_data, true);

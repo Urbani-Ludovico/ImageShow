@@ -138,7 +138,7 @@ void free_file(const File* file) {
 
 
 void free_files() {
-    for (int i = 0; i < files->len; i++) {
+    for (guint i = 0; i < files->len; i++) {
         free_file(g_ptr_array_index(files, i));
     }
     g_ptr_array_free(files, true);
