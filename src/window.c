@@ -5,9 +5,8 @@
 
 #include "loop.h"
 
-WindowData window_data;
-
 extern GtkApplication* app;
+extern GPtrArray* windows_data;
 extern int refresh_interval;
 extern int label_size;
 
@@ -15,83 +14,90 @@ static void quit_action_cb(GSimpleAction*, GVariant*, gpointer);
 
 static void autoplay_action(GSimpleAction*, GVariant*, gpointer);
 
-void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label);
+void create_window_page(const WindowData* window_data, GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label);
 
-static void fullscreen(gpointer);
+static void fullscreen(gpointer user_data);
+
+static void on_window_close(GtkWindow* window, gpointer);
 
 
 int create_window(GtkApplication* app) {
-    window_data.window = GTK_WINDOW(gtk_application_window_new(app));
+    WindowData* window_data = malloc(sizeof(WindowData));
+    g_ptr_array_add(windows_data, window_data);
 
-    gtk_window_set_title(window_data.window, "Random Image Show");
-    gtk_window_set_default_size(window_data.window, 800, 600);
+    window_data->window = GTK_WINDOW(gtk_application_window_new(app));
+
+    gtk_window_set_title(window_data->window, "Random Image Show");
+    gtk_window_set_default_size(window_data->window, 800, 600);
+
+    g_signal_connect(window_data->window, "close-request", G_CALLBACK(on_window_close), NULL);
 
     //
     // Stack
     //
-    window_data.stack = GTK_STACK(gtk_stack_new());
-    gtk_stack_set_transition_type(window_data.stack, GTK_STACK_TRANSITION_TYPE_CROSSFADE);
-    gtk_stack_set_transition_duration(window_data.stack, refresh_interval >= 3000 ? 1000 : refresh_interval / 3);
-    gtk_window_set_child(window_data.window, GTK_WIDGET(window_data.stack));
+    window_data->stack = GTK_STACK(gtk_stack_new());
+    gtk_stack_set_transition_type(window_data->stack, GTK_STACK_TRANSITION_TYPE_CROSSFADE);
+    gtk_stack_set_transition_duration(window_data->stack, refresh_interval >= 3000 ? 1000 : refresh_interval / 3);
+    gtk_window_set_child(window_data->window, GTK_WIDGET(window_data->stack));
 
     //
     // Pages
     //
-    create_window_page(&window_data.overlay1, &window_data.image1, &window_data.label1);
-    create_window_page(&window_data.overlay2, &window_data.image2, &window_data.label2);
+    create_window_page(window_data, &window_data->overlay1, &window_data->image1, &window_data->label1);
+    create_window_page(window_data, &window_data->overlay2, &window_data->image2, &window_data->label2);
 
     //
     // Menu
     //
-    window_data.menu_bar = g_menu_new();
+    window_data->menu_bar = g_menu_new();
 
-    window_data.file_menu = g_menu_new();
-    g_menu_append(window_data.file_menu, "Fullscreen", "app.fullscreen");
-    g_menu_append(window_data.file_menu, "Quit", "app.quit");
+    window_data->file_menu = g_menu_new();
+    g_menu_append(window_data->file_menu, "Fullscreen", "app.fullscreen");
+    g_menu_append(window_data->file_menu, "Quit", "app.quit");
 
-    window_data.presentation_menu = g_menu_new();
-    g_menu_append(window_data.presentation_menu, "Previous image", "app.prev");
-    g_menu_append(window_data.presentation_menu, "Next image", "app.next");
-    g_menu_append(window_data.presentation_menu, "Auto play", "app.autoplay");
-    g_menu_append(window_data.presentation_menu, "Shuffle files", "app.shuffle");
+    window_data->presentation_menu = g_menu_new();
+    g_menu_append(window_data->presentation_menu, "Previous image", "app.prev");
+    g_menu_append(window_data->presentation_menu, "Next image", "app.next");
+    g_menu_append(window_data->presentation_menu, "Auto play", "app.autoplay");
+    g_menu_append(window_data->presentation_menu, "Shuffle files", "app.shuffle");
 
-    g_menu_append_submenu(window_data.menu_bar, "File", G_MENU_MODEL(window_data.file_menu));
-    g_menu_append_submenu(window_data.menu_bar, "Presentation", G_MENU_MODEL(window_data.presentation_menu));
+    g_menu_append_submenu(window_data->menu_bar, "File", G_MENU_MODEL(window_data->file_menu));
+    g_menu_append_submenu(window_data->menu_bar, "Presentation", G_MENU_MODEL(window_data->presentation_menu));
 
     // Create the popover menu
-    window_data.menu_button = GTK_MENU_BUTTON(gtk_menu_button_new());
-    window_data.menu_popover = GTK_POPOVER_MENU(gtk_popover_menu_new_from_model(G_MENU_MODEL(window_data.menu_bar)));
-    gtk_menu_button_set_popover(window_data.menu_button, GTK_WIDGET(window_data.menu_popover));
-    gtk_menu_button_set_icon_name(window_data.menu_button, "open-menu-symbolic");
+    window_data->menu_button = GTK_MENU_BUTTON(gtk_menu_button_new());
+    window_data->menu_popover = GTK_POPOVER_MENU(gtk_popover_menu_new_from_model(G_MENU_MODEL(window_data->menu_bar)));
+    gtk_menu_button_set_popover(window_data->menu_button, GTK_WIDGET(window_data->menu_popover));
+    gtk_menu_button_set_icon_name(window_data->menu_button, "open-menu-symbolic");
 
     // Create a header bar and add the menu button
-    window_data.header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
-    gtk_header_bar_pack_end(window_data.header_bar, GTK_WIDGET(window_data.menu_button));
-    gtk_window_set_titlebar(window_data.window, GTK_WIDGET(window_data.header_bar));
+    window_data->header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
+    gtk_header_bar_pack_end(window_data->header_bar, GTK_WIDGET(window_data->menu_button));
+    gtk_window_set_titlebar(window_data->window, GTK_WIDGET(window_data->header_bar));
 
     // Create actions
-    window_data.menu_fullscreen_action = g_simple_action_new("fullscreen", nullptr);
-    window_data.menu_quit_action = g_simple_action_new("quit", nullptr);
-    window_data.menu_prev_action = g_simple_action_new("prev", nullptr);
-    window_data.menu_next_action = g_simple_action_new("next", nullptr);
-    window_data.menu_autoplay_action = g_simple_action_new_stateful("autoplay", nullptr, g_variant_new_boolean(FALSE));
-    window_data.menu_shuffle_action = g_simple_action_new("shuffle", nullptr);
+    window_data->menu_fullscreen_action = g_simple_action_new("fullscreen", nullptr);
+    window_data->menu_quit_action = g_simple_action_new("quit", nullptr);
+    window_data->menu_prev_action = g_simple_action_new("prev", nullptr);
+    window_data->menu_next_action = g_simple_action_new("next", nullptr);
+    window_data->menu_autoplay_action = g_simple_action_new_stateful("autoplay", nullptr, g_variant_new_boolean(FALSE));
+    window_data->menu_shuffle_action = g_simple_action_new("shuffle", nullptr);
 
     // Connect action signals
-    g_signal_connect_swapped(window_data.menu_fullscreen_action, "activate", G_CALLBACK(fullscreen), NULL);
-    g_signal_connect_swapped(window_data.menu_quit_action, "activate", G_CALLBACK(quit_action_cb), NULL);
-    g_signal_connect_swapped(window_data.menu_prev_action, "activate", G_CALLBACK(prev_image_action), NULL);
-    g_signal_connect_swapped(window_data.menu_next_action, "activate", G_CALLBACK(next_image_action), NULL);
-    g_signal_connect_swapped(window_data.menu_autoplay_action, "activate", G_CALLBACK(autoplay_action), NULL);
-    g_signal_connect_swapped(window_data.menu_shuffle_action, "activate", G_CALLBACK(shuffle_files_action), NULL);
+    g_signal_connect_swapped(window_data->menu_fullscreen_action, "activate", G_CALLBACK(fullscreen), window_data);
+    g_signal_connect_swapped(window_data->menu_quit_action, "activate", G_CALLBACK(quit_action_cb), NULL);
+    g_signal_connect_swapped(window_data->menu_prev_action, "activate", G_CALLBACK(prev_image_action), NULL);
+    g_signal_connect_swapped(window_data->menu_next_action, "activate", G_CALLBACK(next_image_action), NULL);
+    g_signal_connect_swapped(window_data->menu_autoplay_action, "activate", G_CALLBACK(autoplay_action), NULL);
+    g_signal_connect_swapped(window_data->menu_shuffle_action, "activate", G_CALLBACK(shuffle_files_action), NULL);
 
     // Add actions to window and application
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_quit_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_fullscreen_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_prev_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_next_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_autoplay_action));
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data.menu_shuffle_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_quit_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_fullscreen_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_prev_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_next_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_autoplay_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_shuffle_action));
 
     // Set up accelerators (keyboard shortcuts)
     const gchar* fullscreen_accels[] = {"Escape", nullptr};
@@ -114,22 +120,22 @@ int create_window(GtkApplication* app) {
     GtkCssProvider* provider = gtk_css_provider_new();
     gtk_css_provider_load_from_string(provider, css);
     free(css);
-    gtk_style_context_add_provider_for_display(gtk_widget_get_display(GTK_WIDGET(window_data.window)), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_style_context_add_provider_for_display(gtk_widget_get_display(GTK_WIDGET(window_data->window)), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
     // Prevent suspend
-    gtk_application_inhibit(app, window_data.window, GTK_APPLICATION_INHIBIT_SUSPEND | GTK_APPLICATION_INHIBIT_IDLE, "Keeping system awake for important task");
+    gtk_application_inhibit(app, window_data->window, GTK_APPLICATION_INHIBIT_SUSPEND | GTK_APPLICATION_INHIBIT_IDLE, "Keeping system awake for image show");
 
-    gtk_window_present(window_data.window);
+    gtk_window_present(window_data->window);
 
     return EXIT_SUCCESS;
 }
 
 
-void create_window_page(GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label) {
+void create_window_page(const WindowData* window_data, GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label) {
     // Overlay
     auto const overlay = GTK_OVERLAY(gtk_overlay_new());
     *out_overlay = overlay;
-    gtk_stack_add_child(window_data.stack, GTK_WIDGET(overlay));
+    gtk_stack_add_child(window_data->stack, GTK_WIDGET(overlay));
 
     // Image
     auto const image = GTK_PICTURE(gtk_picture_new());
@@ -167,10 +173,17 @@ static void autoplay_action(GSimpleAction*, GVariant*, gpointer) {
 }
 
 
-static void fullscreen(gpointer) {
-    if (gtk_window_is_fullscreen(window_data.window)) {
-        gtk_window_unfullscreen(window_data.window);
+static void fullscreen(const gpointer user_data) {
+    auto const window_data = (WindowData*)user_data;
+    if (gtk_window_is_fullscreen(window_data->window)) {
+        gtk_window_unfullscreen(window_data->window);
     } else {
-        gtk_window_fullscreen(window_data.window);
+        gtk_window_fullscreen(window_data->window);
     }
+}
+
+static void on_window_close(GtkWindow* window, gpointer) {
+    g_ptr_array_remove(windows_data, window);
+
+    gtk_window_destroy(window);
 }
