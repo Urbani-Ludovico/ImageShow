@@ -119,7 +119,7 @@ int create_window() {
     window_data->menu_prev_action = g_simple_action_new("prev", nullptr);
     window_data->menu_next_action = g_simple_action_new("next", nullptr);
     window_data->menu_autoplay_action = g_simple_action_new_stateful("autoplay", nullptr, g_variant_new_boolean(FALSE));
-    window_data->menu_thisautoplay_action = g_simple_action_new_stateful("autoplay", nullptr, g_variant_new_boolean(FALSE));
+    window_data->menu_thisautoplay_action = g_simple_action_new_stateful("thisautoplay", nullptr, g_variant_new_boolean(FALSE));
     window_data->menu_shuffle_action = g_simple_action_new("shuffle", nullptr);
 
     // Connect action signals
