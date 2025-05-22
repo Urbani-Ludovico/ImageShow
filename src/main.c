@@ -4,6 +4,7 @@
 
 #include "files.h"
 #include "window.h"
+#include "loop.h"
 
 static void on_activate(GtkApplication* app);
 
@@ -69,6 +70,5 @@ static void on_activate(GtkApplication* app) {
         exit(EXIT_FAILURE);
     }
 
-    //update_image(files.files);
-    //start_stop_loop();
+    start_stop_loop();
 }

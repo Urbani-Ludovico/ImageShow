@@ -222,13 +222,15 @@ static void quit_action(gpointer) {
 }
 
 
-static void prev_image_action(gpointer) {
-    // TODO
+static void prev_image_action(const gpointer user_data) {
+    auto const window_data = (WindowData*)user_data;
+    prev_image(window_data);
 }
 
 
-static void next_image_action(gpointer) {
-    // TODO
+static void next_image_action(const gpointer user_data) {
+    auto const window_data = (WindowData*)user_data;
+    next_image(window_data);
 }
 
 
