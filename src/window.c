@@ -302,7 +302,14 @@ void update_window_image(WindowData* window_data) {
     }
     auto const file = (File*)g_ptr_array_index(files, window_data->files_order[window_data->file_index]);
 
-    gtk_picture_set_filename(next_picture, file->path);
+    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(file->path, nullptr);
+    pixbuf = gdk_pixbuf_apply_embedded_orientation(pixbuf);
+
+    GdkPaintable *paintable = GDK_PAINTABLE(gdk_texture_new_for_pixbuf(pixbuf));
+    g_object_unref(pixbuf);
+
+    gtk_picture_set_paintable(next_picture, paintable);
+    g_object_unref(paintable);
 
     if (file->title != nullptr) {
         gtk_label_set_text(next_label, file->title);
