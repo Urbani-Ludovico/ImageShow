@@ -7,6 +7,7 @@
 
 extern GtkApplication* app;
 extern GPtrArray* windows_data;
+extern GPtrArray* files;
 extern int refresh_interval;
 extern int label_size;
 
@@ -29,6 +30,18 @@ int create_window(GtkApplication* app) {
 
     gtk_window_set_title(window_data->window, "Random Image Show");
     gtk_window_set_default_size(window_data->window, 800, 600);
+
+    //
+    // Files
+    //
+    window_data->files_order = malloc(sizeof(unsigned int) * files->len);
+    for (unsigned int i = 0; i < files->len; i++) {
+        window_data->files_order[i] = i;
+    }
+
+    //
+    // Signals
+    //
 
     g_signal_connect(window_data->window, "close-request", G_CALLBACK(on_window_close), NULL);
 
