@@ -265,7 +265,7 @@ void update_window_image(WindowData* window_data) {
         next_label = window_data->label1;
     }
 
-    if (window_data->file_index >= windows_data->len) {
+    if (window_data->file_index >= files->len) {
         window_data->file_index = 0;
     }
     auto const file = (File*)g_ptr_array_index(files, window_data->file_index);
