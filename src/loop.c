@@ -24,7 +24,9 @@ void start_loop() {
     if (!timeout_exists) {
         timeout_id = g_timeout_add(refresh_interval, loop_step, NULL);
         timeout_exists = true;
-        // g_simple_action_set_state(window_data.menu_autoplay_action, g_variant_new_boolean(TRUE));
+        for (guint i = 0; i < windows_data->len; i++) {
+            g_simple_action_set_state(((WindowData*)g_ptr_array_index(windows_data, i))->menu_autoplay_action, g_variant_new_boolean(true));
+        }
     }
 }
 
@@ -33,7 +35,9 @@ void stop_loop() {
     if (timeout_exists) {
         g_source_remove(timeout_id);
         timeout_exists = false;
-        // g_simple_action_set_state(window_data.menu_autoplay_action, g_variant_new_boolean(FALSE));
+        for (guint i = 0; i < windows_data->len; i++) {
+            g_simple_action_set_state(((WindowData*)g_ptr_array_index(windows_data, i))->menu_autoplay_action, g_variant_new_boolean(false));
+        }
     }
 }
 
