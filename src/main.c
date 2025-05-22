@@ -1,8 +1,8 @@
 
 #include <gtk/gtk.h>
+#include <time.h>
 
 #include "files.h"
-#include "loop.h"
 #include "window.h"
 
 static void on_activate(GtkApplication* app);
@@ -19,6 +19,8 @@ int label_size = 24;
 
 
 int main(const int argc, char** argv) {
+    srand(time(nullptr)); // NOLINT(cert-msc30-c, cert-msc50-cpp)
+
     windows_data = g_ptr_array_new();
     files = g_ptr_array_new();
 

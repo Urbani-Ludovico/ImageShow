@@ -143,3 +143,15 @@ void free_files() {
     }
     g_ptr_array_free(files, true);
 }
+
+void shuffle_window_files(const WindowData* window_data) {
+    if (files->len > 1) {
+        for (size_t i = 0; i < files->len - 1; i++) {
+            const size_t j = i + rand() / (RAND_MAX / (files->len - i) + 1); // NOLINT(cert-msc30-c, cert-msc50-cpp)
+
+            auto const temp = window_data->files_order[i];
+            window_data->files_order[i] = window_data->files_order[j];
+            window_data->files_order[j] = temp;
+        }
+    }
+}

@@ -1,6 +1,7 @@
 
 #ifndef FILES_H
 #define FILES_H
+#include "window.h"
 
 typedef struct File_ {
     char* path;
@@ -9,5 +10,7 @@ typedef struct File_ {
 
 int get_files();
 void free_files();
+
+void shuffle_window_files(const WindowData* window_data);
 
 #endif

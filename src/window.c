@@ -46,6 +46,7 @@ int create_window(GtkApplication* app) {
     for (unsigned int i = 0; i < files->len; i++) {
         window_data->files_order[i] = i;
     }
+    shuffle_window_files(window_data);
 
     //
     // Signals
@@ -226,8 +227,9 @@ static void autoplay_action(gpointer) {
 }
 
 
-static void shuffle_files_action(gpointer) {
-    // TODO
+static void shuffle_files_action(const gpointer user_data) {
+    auto const window_data = (WindowData*)user_data;
+    shuffle_window_files(window_data);
 }
 
 
