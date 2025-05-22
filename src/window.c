@@ -51,6 +51,8 @@ int create_window(GtkApplication* app) {
 
     window_data->file_index = 0;
 
+    window_data->next_step_skip = false;
+
     //
     // Signals
     //
@@ -224,12 +226,14 @@ static void quit_action(gpointer) {
 
 static void prev_image_action(const gpointer user_data) {
     auto const window_data = (WindowData*)user_data;
+    window_data->next_step_skip = true;
     prev_image(window_data);
 }
 
 
 static void next_image_action(const gpointer user_data) {
     auto const window_data = (WindowData*)user_data;
+    window_data->next_step_skip = true;
     next_image(window_data);
 }
 

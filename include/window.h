@@ -34,6 +34,7 @@ typedef struct WindowData_ {
 
     unsigned int* files_order;
     unsigned int file_index;
+    bool next_step_skip;
 } WindowData;
 
 int create_window(GtkApplication* app);

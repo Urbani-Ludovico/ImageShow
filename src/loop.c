@@ -40,7 +40,11 @@ void stop_loop() {
 
 static gboolean loop_step(gpointer) {
     for (guint i = 0; i < windows_data->len; i++) {
-        next_image(g_ptr_array_index(windows_data, i));
+        auto const window_data = (WindowData*)g_ptr_array_index(windows_data, i);
+        if (!window_data->next_step_skip) {
+            next_image(window_data);
+        }
+        window_data->next_step_skip = false;
     }
     return true;
 }
