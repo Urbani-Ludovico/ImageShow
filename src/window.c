@@ -4,6 +4,7 @@
 #include <gtk/gtkapplicationwindow.h>
 
 #include "loop.h"
+#include "files.h"
 
 extern GtkApplication* app;
 extern GPtrArray* windows_data;
@@ -47,6 +48,8 @@ int create_window(GtkApplication* app) {
         window_data->files_order[i] = i;
     }
     shuffle_window_files(window_data);
+
+    window_data->file_index = 0;
 
     //
     // Signals
@@ -150,10 +153,17 @@ int create_window(GtkApplication* app) {
     free(css);
     gtk_style_context_add_provider_for_display(gtk_widget_get_display(GTK_WIDGET(window_data->window)), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
+    //
     // Prevent suspend
+    //
     gtk_application_inhibit(app, window_data->window, GTK_APPLICATION_INHIBIT_SUSPEND | GTK_APPLICATION_INHIBIT_IDLE, "Keeping system awake for image show");
 
+    //
+    // Show
+    //
     gtk_window_present(window_data->window);
+
+    update_window_image(window_data);
 
     return EXIT_SUCCESS;
 }
@@ -239,6 +249,35 @@ static void on_window_close(GtkWindow* window, gpointer) {
     gtk_window_destroy(window);
 }
 
+void update_window_image(WindowData* window_data) {
+    GtkOverlay* next_overlay;
+    GtkPicture* next_picture;
+    GtkLabel* next_label;
+    if (gtk_stack_get_visible_child(window_data->stack) == GTK_WIDGET(window_data->overlay1)) {
+        next_overlay = window_data->overlay2;
+        next_picture = window_data->image2;
+        next_label = window_data->label2;
+    } else {
+        next_overlay = window_data->overlay1;
+        next_picture = window_data->image1;
+        next_label = window_data->label1;
+    }
+
+    if (window_data->file_index >= windows_data->len) {
+        window_data->file_index = 0;
+    }
+    auto const file = (File*)g_ptr_array_index(files, window_data->file_index);
+
+    gtk_picture_set_filename(next_picture, file->path);
+
+    if (file->title != nullptr) {
+        gtk_label_set_text(next_label, file->title);
+    } else {
+        gtk_label_set_text(next_label, "");
+    }
+
+    gtk_stack_set_visible_child(window_data->stack, GTK_WIDGET(next_overlay));
+}
 
 void free_windows() {
     for (int i = 0; i < windows_data->len; i++) {

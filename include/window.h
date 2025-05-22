@@ -33,9 +33,12 @@ typedef struct WindowData_ {
     GtkLabel* label2;
 
     unsigned int* files_order;
+    unsigned int file_index;
 } WindowData;
 
 int create_window(GtkApplication* app);
+
+void update_window_image(WindowData* window_data);
 
 void free_windows();
 
