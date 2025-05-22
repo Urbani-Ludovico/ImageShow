@@ -23,6 +23,8 @@ static void quit_action(gpointer user_data);
 
 static void autoplay_action(gpointer);
 
+static void this_autoplay_action(gpointer user_data);
+
 static void prev_image_action(gpointer user_data);
 
 static void next_image_action(gpointer user_data);
@@ -54,6 +56,7 @@ int create_window() {
 
     window_data->file_index = 0;
 
+    window_data->autoplay = true;
     window_data->next_step_skip = false;
 
     //
@@ -91,6 +94,7 @@ int create_window() {
     g_menu_append(window_data->presentation_menu, "Previous image", "win.prev");
     g_menu_append(window_data->presentation_menu, "Next image", "win.next");
     g_menu_append(window_data->presentation_menu, "Auto play", "win.autoplay");
+    g_menu_append(window_data->presentation_menu, "Auto play this window", "win.thisautoplay");
     g_menu_append(window_data->presentation_menu, "Shuffle files", "win.shuffle");
 
     g_menu_append_submenu(window_data->menu_bar, "File", G_MENU_MODEL(window_data->file_menu));
@@ -115,6 +119,7 @@ int create_window() {
     window_data->menu_prev_action = g_simple_action_new("prev", nullptr);
     window_data->menu_next_action = g_simple_action_new("next", nullptr);
     window_data->menu_autoplay_action = g_simple_action_new_stateful("autoplay", nullptr, g_variant_new_boolean(FALSE));
+    window_data->menu_thisautoplay_action = g_simple_action_new_stateful("autoplay", nullptr, g_variant_new_boolean(FALSE));
     window_data->menu_shuffle_action = g_simple_action_new("shuffle", nullptr);
 
     // Connect action signals
@@ -125,6 +130,7 @@ int create_window() {
     g_signal_connect_swapped(window_data->menu_prev_action, "activate", G_CALLBACK(prev_image_action), window_data);
     g_signal_connect_swapped(window_data->menu_next_action, "activate", G_CALLBACK(next_image_action), window_data);
     g_signal_connect_swapped(window_data->menu_autoplay_action, "activate", G_CALLBACK(autoplay_action), NULL);
+    g_signal_connect_swapped(window_data->menu_thisautoplay_action, "activate", G_CALLBACK(this_autoplay_action), window_data);
     g_signal_connect_swapped(window_data->menu_shuffle_action, "activate", G_CALLBACK(shuffle_files_action), window_data);
 
     // Add actions to window and application
@@ -135,6 +141,7 @@ int create_window() {
     g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_prev_action));
     g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_next_action));
     g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_autoplay_action));
+    g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_thisautoplay_action));
     g_action_map_add_action(G_ACTION_MAP(window_data->window), G_ACTION(window_data->menu_shuffle_action));
 
     // Set up accelerators (keyboard shortcuts)
@@ -150,8 +157,10 @@ int create_window() {
     gtk_application_set_accels_for_action(app, "win.prev", left_accels);
     const gchar* right_accels[] = {"Right", nullptr};
     gtk_application_set_accels_for_action(app, "win.next", right_accels);
-    const gchar* autoplay_accels[] = {"space", nullptr};
+    const gchar* autoplay_accels[] = {"<Ctrl>space", nullptr};
     gtk_application_set_accels_for_action(app, "win.autoplay", autoplay_accels);
+    const gchar* thisautoplay_accels[] = {"space", nullptr};
+    gtk_application_set_accels_for_action(app, "win.thisautoplay", thisautoplay_accels);
     const gchar* shuffle_accels[] = {"<Ctrl>R", nullptr};
     gtk_application_set_accels_for_action(app, "win.shuffle", shuffle_accels);
 
@@ -253,6 +262,12 @@ static void next_image_action(const gpointer user_data) {
 
 static void autoplay_action(gpointer) {
     start_stop_loop();
+}
+
+static void this_autoplay_action(const gpointer user_data) {
+    auto const window_data = (WindowData*)user_data;
+    window_data->autoplay = !window_data->autoplay;
+    g_simple_action_set_state(window_data->menu_thisautoplay_action, g_variant_new_boolean(window_data->autoplay));
 }
 
 

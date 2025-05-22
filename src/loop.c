@@ -41,7 +41,7 @@ void stop_loop() {
 static gboolean loop_step(gpointer) {
     for (guint i = 0; i < windows_data->len; i++) {
         auto const window_data = (WindowData*)g_ptr_array_index(windows_data, i);
-        if (!window_data->next_step_skip) {
+        if (!window_data->next_step_skip && window_data->autoplay) {
             next_image(window_data);
         }
         window_data->next_step_skip = false;
