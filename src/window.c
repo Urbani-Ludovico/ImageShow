@@ -268,7 +268,7 @@ void update_window_image(WindowData* window_data) {
     if (window_data->file_index >= files->len) {
         window_data->file_index = 0;
     }
-    auto const file = (File*)g_ptr_array_index(files, window_data->file_index);
+    auto const file = (File*)g_ptr_array_index(files, window_data->files_order[window_data->file_index]);
 
     gtk_picture_set_filename(next_picture, file->path);
 
