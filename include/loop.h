@@ -10,8 +10,6 @@ void start_stop_loop();
 
 void next_image();
 void prev_image();
-gboolean next_image_action(gpointer);
-gboolean prev_image_action(gpointer);
 
 void update_image(const FilesNode* next_node);
 

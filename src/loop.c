@@ -32,22 +32,10 @@ void next_image() {
 }
 
 
-gboolean next_image_action(gpointer) {
-    next_image();
-    return TRUE;
-}
-
-
 void prev_image() {
     FilesNode* next_node = files.files->prev;
     files.files = next_node;
     update_image(next_node);
-}
-
-
-gboolean prev_image_action(gpointer) {
-    prev_image();
-    return TRUE;
 }
 
 

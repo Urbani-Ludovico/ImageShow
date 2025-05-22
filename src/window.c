@@ -11,13 +11,21 @@ extern GPtrArray* files;
 extern int refresh_interval;
 extern int label_size;
 
-static void quit_action_cb(GSimpleAction*, GVariant*, gpointer);
+static void close_action(gpointer user_data);
 
-static void autoplay_action(GSimpleAction*, GVariant*, gpointer);
+static void quit_action(gpointer user_data);
+
+static void fullscreen_action(gpointer user_data);
+
+static void autoplay_action(gpointer);
+
+static void prev_image_action(gpointer user_data);
+
+static void next_image_action(gpointer user_data);
+
+static void shuffle_files_action(gpointer user_data);
 
 void create_window_page(const WindowData* window_data, GtkOverlay** out_overlay, GtkPicture** out_image, GtkLabel** out_label);
-
-static void fullscreen(gpointer user_data);
 
 static void on_window_close(GtkWindow* window, gpointer);
 
@@ -66,6 +74,7 @@ int create_window(GtkApplication* app) {
 
     window_data->file_menu = g_menu_new();
     g_menu_append(window_data->file_menu, "Fullscreen", "app.fullscreen");
+    g_menu_append(window_data->file_menu, "Close window", "win.close");
     g_menu_append(window_data->file_menu, "Quit", "app.quit");
 
     window_data->presentation_menu = g_menu_new();
@@ -90,6 +99,7 @@ int create_window(GtkApplication* app) {
 
     // Create actions
     window_data->menu_fullscreen_action = g_simple_action_new("fullscreen", nullptr);
+    window_data->menu_close_action = g_simple_action_new("close", nullptr);
     window_data->menu_quit_action = g_simple_action_new("quit", nullptr);
     window_data->menu_prev_action = g_simple_action_new("prev", nullptr);
     window_data->menu_next_action = g_simple_action_new("next", nullptr);
@@ -97,16 +107,18 @@ int create_window(GtkApplication* app) {
     window_data->menu_shuffle_action = g_simple_action_new("shuffle", nullptr);
 
     // Connect action signals
-    g_signal_connect_swapped(window_data->menu_fullscreen_action, "activate", G_CALLBACK(fullscreen), window_data);
-    g_signal_connect_swapped(window_data->menu_quit_action, "activate", G_CALLBACK(quit_action_cb), NULL);
-    g_signal_connect_swapped(window_data->menu_prev_action, "activate", G_CALLBACK(prev_image_action), NULL);
-    g_signal_connect_swapped(window_data->menu_next_action, "activate", G_CALLBACK(next_image_action), NULL);
+    g_signal_connect_swapped(window_data->menu_fullscreen_action, "activate", G_CALLBACK(fullscreen_action), window_data);
+    g_signal_connect_swapped(window_data->menu_close_action, "activate", G_CALLBACK(close_action), window_data);
+    g_signal_connect_swapped(window_data->menu_quit_action, "activate", G_CALLBACK(quit_action), NULL);
+    g_signal_connect_swapped(window_data->menu_prev_action, "activate", G_CALLBACK(prev_image_action), window_data);
+    g_signal_connect_swapped(window_data->menu_next_action, "activate", G_CALLBACK(next_image_action), window_data);
     g_signal_connect_swapped(window_data->menu_autoplay_action, "activate", G_CALLBACK(autoplay_action), NULL);
-    g_signal_connect_swapped(window_data->menu_shuffle_action, "activate", G_CALLBACK(shuffle_files_action), NULL);
+    g_signal_connect_swapped(window_data->menu_shuffle_action, "activate", G_CALLBACK(shuffle_files_action), window_data);
 
     // Add actions to window and application
-    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_quit_action));
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_fullscreen_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_close_action));
+    g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_quit_action));
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_prev_action));
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_next_action));
     g_action_map_add_action(G_ACTION_MAP(app), G_ACTION(window_data->menu_autoplay_action));
@@ -115,6 +127,8 @@ int create_window(GtkApplication* app) {
     // Set up accelerators (keyboard shortcuts)
     const gchar* fullscreen_accels[] = {"Escape", nullptr};
     gtk_application_set_accels_for_action(app, "app.fullscreen", fullscreen_accels);
+    const gchar* close_accels[] = {"<Ctrl>W", nullptr};
+    gtk_application_set_accels_for_action(app, "win.close", close_accels);
     const gchar* quit_accels[] = {"<Ctrl>Q", nullptr};
     gtk_application_set_accels_for_action(app, "app.quit", quit_accels);
     const gchar* left_accels[] = {"Left", nullptr};
@@ -176,17 +190,7 @@ void create_window_page(const WindowData* window_data, GtkOverlay** out_overlay,
 }
 
 
-static void quit_action_cb(GSimpleAction*, GVariant*, gpointer) {
-    g_application_quit(G_APPLICATION(app));
-}
-
-
-static void autoplay_action(GSimpleAction*, GVariant*, gpointer) {
-    start_stop_loop();
-}
-
-
-static void fullscreen(const gpointer user_data) {
+static void fullscreen_action(const gpointer user_data) {
     auto const window_data = (WindowData*)user_data;
     if (gtk_window_is_fullscreen(window_data->window)) {
         gtk_window_unfullscreen(window_data->window);
@@ -195,11 +199,44 @@ static void fullscreen(const gpointer user_data) {
     }
 }
 
+
+static void close_action(const gpointer user_data) {
+    auto const window_data = (WindowData*)user_data;
+    gtk_window_close(window_data->window);
+}
+
+
+static void quit_action(gpointer) {
+    g_application_quit(G_APPLICATION(app));
+}
+
+
+static void prev_image_action(gpointer) {
+    // TODO
+}
+
+
+static void next_image_action(gpointer) {
+    // TODO
+}
+
+
+static void autoplay_action(gpointer) {
+    start_stop_loop();
+}
+
+
+static void shuffle_files_action(gpointer) {
+    // TODO
+}
+
+
 static void on_window_close(GtkWindow* window, gpointer) {
     g_ptr_array_remove(windows_data, window);
 
     gtk_window_destroy(window);
 }
+
 
 void free_windows() {
     for (int i = 0; i < windows_data->len; i++) {

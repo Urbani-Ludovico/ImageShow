@@ -15,6 +15,7 @@ typedef struct WindowData_ {
     GMenu* file_menu;
     GMenu* presentation_menu;
     GSimpleAction* menu_fullscreen_action;
+    GSimpleAction* menu_close_action;
     GSimpleAction* menu_quit_action;
     GSimpleAction* menu_prev_action;
     GSimpleAction* menu_next_action;
