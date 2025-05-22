@@ -8,7 +8,7 @@ extern int refresh_interval;
 bool timeout_exists = false;
 guint timeout_id;
 
-static void loop_step(gpointer);
+static gboolean loop_step(gpointer);
 
 
 void start_stop_loop() {
@@ -38,10 +38,11 @@ void stop_loop() {
 }
 
 
-static void loop_step(gpointer) {
+static gboolean loop_step(gpointer) {
     for (int i = 0; i < windows_data->len; i++) {
         next_image(g_ptr_array_index(windows_data, i));
     }
+    return true;
 }
 
 
