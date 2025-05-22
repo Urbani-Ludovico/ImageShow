@@ -2,23 +2,12 @@
 #ifndef FILES_H
 #define FILES_H
 
-#include <gtk/gtk.h>
-
 typedef struct File_ {
     char* path;
     char* title;
-    struct File_* next;
-    struct File_* prev;
-} FilesNode;
-
-typedef struct Files_ {
-    FilesNode* files;
-    unsigned int count;
-} Files;
+} File;
 
 int get_files();
 void free_files();
-void shuffle_files();
-void shuffle_files_action(gpointer);
 
 #endif

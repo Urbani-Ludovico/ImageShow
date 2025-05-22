@@ -10,16 +10,17 @@ static void on_activate(GtkApplication* app);
 GtkApplication* app;
 GPtrArray* windows_data;
 
+GPtrArray* files;
+
 char* source_path = nullptr;
 int refresh_interval = 4000;
 char* add_title = nullptr;
 int label_size = 24;
 
-extern Files files;
-
 
 int main(const int argc, char** argv) {
     windows_data = g_ptr_array_new();
+    files = g_ptr_array_new();
 
     app = gtk_application_new("com.example.imageshow", G_APPLICATION_DEFAULT_FLAGS);
 
@@ -33,7 +34,8 @@ int main(const int argc, char** argv) {
     const int status = g_application_run(G_APPLICATION(app), argc, argv);
 
     g_object_unref(app);
-    g_ptr_array_free(windows_data, TRUE);
+    g_ptr_array_free(windows_data, true);
+    free_files();
 
     return status;
 }
@@ -64,8 +66,6 @@ static void on_activate(GtkApplication* app) {
         g_application_quit(G_APPLICATION(app));
         exit(EXIT_FAILURE);
     }
-
-    shuffle_files();
 
     //update_image(files.files);
     //start_stop_loop();

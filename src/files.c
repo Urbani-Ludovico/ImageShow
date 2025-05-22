@@ -6,9 +6,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gtk/gtk.h>
 #include <sys/stat.h>
 
-Files files = {nullptr, 0};
+extern GPtrArray* files;
 
 const char* supported_exts[] = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".tif", ".ico", ".svg", ".webp"};
 constexpr int supported_exts_count = 10;
@@ -28,7 +29,7 @@ int get_files() {
 
     get_files_recursive(source_path);
 
-    if (files.count == 0) {
+    if (files->len == 0) {
         fprintf(stderr, "No files found\n");
         return EXIT_FAILURE;
     }
@@ -95,32 +96,20 @@ int get_files_recursive(const char* base_path) {
             }
 
             // Add file to chain
-            FilesNode* file = malloc(sizeof(FilesNode));
+            File* file = malloc(sizeof(File));
             file->path = strdup(path);
             if (add_title == nullptr) {
                 file->title = nullptr;
             } else if (strcmp(add_title, "filename") == 0) {
                 file->title = strndup(entry->d_name, last_dot_index);
             } else if (strcmp(add_title, "lastdir") == 0 && strcmp(base_path, source_path) != 0) {
-                char* last_slash = strrchr(base_path, '/');
+                const char* last_slash = strrchr(base_path, '/');
                 if (last_slash != nullptr) {
                     file->title = strdup(last_slash + 1);
                 }
             }
 
-            if (files.count == 0) {
-                files.files = file;
-                file->next = file;
-                file->prev = file;
-            } else {
-                file->next = files.files;
-                file->prev = files.files->prev;
-
-                files.files->prev->next = file;
-                files.files->prev = file;
-            }
-
-            files.count++;
+            g_ptr_array_add(files, file);
         }
     }
 
@@ -138,71 +127,19 @@ bool is_directory(const char* path) {
 }
 
 
-void free_file(FilesNode* file) {
+void free_file(const File* file) {
     if (file->path != nullptr) {
         free(file->path);
     }
     if (file->title != nullptr) {
         free(file->title);
     }
-    free(file);
-}
-
-
-void free_files_chain(FilesNode* files) {
-    FilesNode* current = files->next;
-    files->next = nullptr;
-    while (current != nullptr) {
-        FilesNode* next = current->next;
-        free_file(current);
-        current = next;
-    }
 }
 
 
 void free_files() {
-    if (files.files != nullptr) {
-        free_files_chain(files.files);
+    for (int i = 0; i < files->len; i++) {
+        free_file(g_ptr_array_index(files, i));
     }
-}
-
-
-void shuffle_files() {
-    FilesNode* new_list = nullptr;
-
-    // Open old chain
-    files.files->prev->next = nullptr;
-    files.files->prev = nullptr;
-
-
-    while (files.files != nullptr) {
-        FilesNode* node = files.files;
-
-        files.files = node->next;
-
-        if (new_list != nullptr) {
-            unsigned int step = rand() % files.count; // NOLINT(cert-msc30-c, cert-msc50-cpp)
-            while (step-- > 0) {
-                new_list = new_list->next;
-            }
-
-            node->next = new_list->next;
-            node->prev = new_list;
-            new_list->next->prev = node;
-            new_list->next = node;
-            new_list = node;
-        } else {
-            new_list = node;
-            node->next = new_list;
-            node->prev = new_list;
-        }
-    }
-
-    // Move new list
-    files.files = new_list;
-}
-
-
-void shuffle_files_action(gpointer) {
-    shuffle_files();
+    g_ptr_array_free(files, true);
 }
